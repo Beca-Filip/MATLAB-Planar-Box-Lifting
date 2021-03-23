@@ -50,29 +50,3 @@ L = [0.5, 0.3, 0.15];
 Ts = 0.001;
 
 Animate_3DOF(q, L, Ts);
-
-%%
-
-A = zeros(2, 2, 2);
-A(:, :, 1) = 1;
-A(:, :, 2) = 2;
-
-x = [0; 1];
-
-dot(A, x, 3)
-
-%%
-[Xt, Yt] = Animate_ToolPoints(2*pi/3*ones(1, 100), zeros(1, 100), zeros(1, 100), struct("type", "hand", "length", 1));
-
-figure;
-plot(Xt(:, 1), Yt(:, 1), 'k', 'LineWidth', 2);
-axis equal
-pbaspect([1 1 1])
-
-%% Test Newton_Raphson
-fun = @(x) exp(-x)-0.5;
-grad = @(x) -exp(-x);
-x0 = 5;
-maxiter = 10;
-
-x = Newton_Raphson(fun, grad, 5, maxiter);

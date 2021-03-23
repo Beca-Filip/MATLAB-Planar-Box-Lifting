@@ -1,13 +1,18 @@
+%Optimizes the human sit-to-stand trajectory, from the moment at which the
+%contact with the chair is lost until the moment the person is standing,
+%using a generic and random quadratic formulation.
 clear all;
 close all;
 clc;
 
 %% Include libs and data
 
+% Add model functions
+addpath("../../Model")
 % Add spline library
-addpath("../libs/splinePack"); 
+addpath("../../../libs/splinePack"); 
 % Add charlotte's data
-addpath("../data/3DOF/Charlotte")
+addpath("../../../data/3DOF/Charlotte")
 % Load the parameters
 load Charlotte.mat
 load param_variable.mat
@@ -65,7 +70,7 @@ boundaries = [
 NumVars = size(qh, 1) * N;
 
 % Set RNG for deterministic behavior
-rng(420);
+rng(36);
 
 % Generate random matrix & Make it into a symmetric positive definite matrix
 % H = randn(NumVars);

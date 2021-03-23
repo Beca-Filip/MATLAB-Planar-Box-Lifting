@@ -6,21 +6,21 @@ clc;
 % Add CASADI library
 if ismac
     % Code to run on Mac platform
-    addpath('../libs/casadi-osx-matlabR2015a-v3.5.1')
+    addpath('../../../libs/casadi-osx-matlabR2015a-v3.5.1')
 elseif isunix
     % Code to run on Linux platform
-    addpath('../libs/casadi-linux-matlabR2015a-v3.5.1')     % Add CASADI to path
+    addpath('../../../libs/casadi-linux-matlabR2015a-v3.5.1')     % Add CASADI to path
 elseif ispc
     % Code to run on Windows platform
-    addpath('../libs/casadi-windows-matlabR2016a-v3.5.5')
+    addpath('../../../libs/casadi-windows-matlabR2016a-v3.5.5')
 else
     disp('Platform not supported')
 end
 
 % Add spline library
-addpath("../libs/splinePack"); 
+addpath("../../../libs/splinePack"); 
 % Add charlotte's data
-addpath("../data/3DOF/Charlotte")
+addpath("../../../data/3DOF/Charlotte")
 % Load the parameters
 load Charlotte.mat
 load param_variable.mat
@@ -101,6 +101,8 @@ NumVars = size(qh, 1) * N;
     
     % Get sum squared of joint velocities
     J = sum(q1_cas(2, :).^2 + q2_cas(2, :).^2 + q3_cas(2, :).^2);
+    fprintf("We assume that the Optimization problem has a cost function of form\n");
+    fprintf("1/2 * x' * H * x + f' * x + c\n");
     
     % Gradient
     gradJ = jacobian(J, x_cas)';
@@ -120,7 +122,7 @@ NumVars = size(qh, 1) * N;
     h2_r = full(evalHessJ(x2_r));
     
     if isequal(h1_r, h2_r)
-        fprintf("The Hessian is indeed constant, so the function must be quadratic.\n");
+        fprintf("The Hessian H is indeed constant, so the function must be quadratic.\n");
         H = h1_r;   % Set hessian
         H = (H + H')/2;
     end
@@ -141,6 +143,8 @@ NumVars = size(qh, 1) * N;
     
     f1_r = full(evalLinearTerm(x1_r));
     f2_r = full(evalLinearTerm(x2_r));
+    
+    fprintf("The norm of the difference between the linear term evaluated at two random points is %.4f.\n", norm(f1_r - f2_r));
     
 %%
 

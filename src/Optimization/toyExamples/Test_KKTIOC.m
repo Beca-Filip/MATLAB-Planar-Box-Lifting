@@ -1,3 +1,5 @@
+%Performs direct and inverse optimization on a simple 2D example with
+%quadratic functions.
 clear all;
 close all;
 clc;
@@ -39,7 +41,7 @@ options = optimoptions('fminunc', 'Display', 'Off');
 
 fprintf("\t====> x1* = %.2f and x2* = %.2f.\n", x_star(1), x_star(2));
 
-%%
+%% Perform IOC by trying to solve system of linear equations
 
 % Substitute "measured" minimum
 x1_star = x_star(1);
@@ -54,12 +56,24 @@ df3 = [df2, c1 + c2];
 % Symbolically equate gradient to zero and normalization to 1
 dfeq = (df3 == [0, 0, 1]);
 
+% Print messages
+fprintf("\n\nOptimal demonstration is x1* = %.4f and x2* = %.4f .\n", x1_star, x2_star);
+fprintf("System of equations for the Cost Function coefficients:\n\t ====>");
+disp(transpose(dfeq));
+
+
+
 % Create variable vector
 c = [c1 c2];
 
 % Solve
 [c1_star, c2_star] = solve(dfeq, c); %% No solution
 
+if isempty(c1_star) && isempty(c2_star)
+    fprintf("No solution by simply solving the eqquations.\n");
+else
+    fprintf("The solutions are c1* = %.4f and c2* = %.4f .\n", c1_star, c2_star);
+end
 %% Perform IOC
 
 % Find column 1 by substituting [1; 0]
@@ -76,3 +90,6 @@ b = [0; 0; 1];
 
 % Solve for c_star by least squares
 c_star = pinv(A) * b;
+
+% Print messages
+fprintf("The least-squares solutions are c1* = %.2f and c2* = %.2f .\n", c_star(1), c_star(2));

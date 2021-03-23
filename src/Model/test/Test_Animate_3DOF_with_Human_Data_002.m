@@ -1,32 +1,37 @@
-%Animates a single sit-to-stand trajectory with data from subject
-%Charlotte.
+%Animates a single portion of a sit-to-stand trajectory correspoding to the
+%piece of the trajectory when the subject gets up.
 
 clear all; close all; clc;
 
 %% Include libs
 % Add spline library
-addpath("../libs/splinePack"); 
+addpath("../../../libs/splinePack"); 
 % Add charlotte's data
-addpath("../data/3DOF/Charlotte")
+addpath("../../../data/3DOF/Charlotte")
 % Load the parameters
 load Charlotte.mat
 
 % Extract a piece of the trajectories
-TimeSpan=4078:4300;
+TimeSpan=4138:4300;
 q=q(:,TimeSpan); qh = q;
 dq=dq(:, TimeSpan); dqh = dq;
 ddq=ddq(:, TimeSpan); ddqh = ddq;
 dddq=dddq(:, TimeSpan); dddqh = dddq;
 clear q dq ddq dddq
+
+F_FP1 = fp.FP1.Forcers(TimeSpan, :)';
+G_FP1 = fp.FP1.Momentrs(TimeSpan, :)';
+F_FP2 = fp.FP2.Forcers(TimeSpan, :)';
+G_FP2 = fp.FP2.Momentrs(TimeSpan, :)';
 %% Define time related parameters
 % Number of points
-M = 223;
+M = 163;
 
 % Start time
 t0 = 0;
 
 % Final time
-tf = 2.22*2;
+tf = 1.62*4;
 
 % Time vector
 t = linspace(t0, tf, M);

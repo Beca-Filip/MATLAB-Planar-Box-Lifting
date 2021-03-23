@@ -5,7 +5,7 @@ clear all; close all; clc;
 
 %% Include libs
 % Add charlotte's data
-addpath("../data/3DOF/Charlotte")
+addpath("../../../data/3DOF/Charlotte")
 % Load the parameters
 load Charlotte.mat
 

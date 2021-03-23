@@ -6,6 +6,9 @@ clc;
 
 %% Test default version
 
+% Add to path
+addpath("../");
+
 % Select sampling rate Ts > 0.01
 Ts = 0.01;
 

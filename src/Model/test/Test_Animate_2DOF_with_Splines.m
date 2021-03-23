@@ -1,7 +1,7 @@
 clear all; close all; clc;
 
 %% Include spline lib
-addpath("../libs/splinePack");
+addpath("../../../libs/splinePack");
 
 
 %% Define time related parameters

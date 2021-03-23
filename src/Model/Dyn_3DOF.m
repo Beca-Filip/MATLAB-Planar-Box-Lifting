@@ -63,7 +63,7 @@
 % Equations:
 
 % Declaration of the function
-function [GAMMA EN]=Dyn_3DOF(q,dq,ddq,base0,ext_wrenches,param)
+function [GAMMA EN]=Dyn_3DOF(q,dq,ddq,ext_wrenches,param)
 
 % Declaration of %global input variables
 q1=q(1,:);
@@ -75,7 +75,7 @@ dq3=dq(3,:);
 ddq1=ddq(1,:);
 ddq2=ddq(2,:);
 ddq3=ddq(3,:);
-G2=base0.G2;MX1=param.MX1;MY1=param.MY1;
+G2=param.Gravity;MX1=param.MX1;MY1=param.MY1;
  MX2=param.MX2;MY2=param.MY2;
  MX3=param.MX3;MY3=param.MY3;
  L1=param.L1;
@@ -171,9 +171,12 @@ CX3=ext_wrenches.CX(3,:);CY3=ext_wrenches.CY(3,:);CZ3=ext_wrenches.CZ(3,:);
 
 % *=*
 % Number of operations : 56 '+' or '-', 61 '*' or '/'
-GAMMA(1,:)=GAM1;
-GAMMA(2,:)=GAM2;
-GAMMA(3,:)=GAM3;
+% GAMMA(1,:)=GAM1;
+% GAMMA(2,:)=GAM2;
+% GAMMA(3,:)=GAM3;
+GAMMA = [GAM1; GAM2; GAM3];
 %disp(["l1:", num2str(length(E10)), "l2:", num2str(length(E20)), "l3:", num2str(length(E30)), ...
   %    "l4:", num2str(length(N10)), "l5:", num2str(length(N20)), "l6:", num2str(length(N30))]);
-EN(1,:)=E10;EN(2,:)=E20;EN(3,:)=E30;EN(4,:)=N10;EN(5,:)=N20;EN(6,:)=N30;
+% EN(1,:)=E10;EN(2,:)=E20;EN(3,:)=E30;EN(4,:)=N10;EN(5,:)=N20;EN(6,:)=N30;
+EN = [E10; E20; E30; N10; N20; N30];
+end

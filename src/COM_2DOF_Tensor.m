@@ -4,7 +4,7 @@ function C = COM_2DOF_Tensor(q,L,M,CMP)
 %angles. Returns the coordinate matrix C of the center of mass along
 %the trajectory.
 %
-%   T = COM_2DOF_TENSOR(q, L, M, CMP) takes in the matrix of joint angles
+%   C = COM_2DOF_TENSOR(q, L, M, CMP) takes in the matrix of joint angles
 %   (2 x Number of samples) alongside the 2D vector of segment lengths, 2D 
 %   vector of normalized segment masses M, and the matrix of center of mass
 %   positions CMP, that is of size (3 x Number of segments) and returns C

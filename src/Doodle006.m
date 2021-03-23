@@ -3,6 +3,19 @@ close all;
 clc;
 
 %% Include libs and data
+% Add CASADI library
+if ismac
+    % Code to run on Mac platform
+    addpath('../libs/casadi-osx-matlabR2015a-v3.5.1')
+elseif isunix
+    % Code to run on Linux platform
+    addpath('../libs/casadi-linux-matlabR2015a-v3.5.1')     % Add CASADI to path
+elseif ispc
+    % Code to run on Windows platform
+    addpath('../libs/casadi-windows-matlabR2016a-v3.5.5')
+else
+    disp('Platform not supported')
+end
 
 % Add spline library
 addpath("../libs/splinePack"); 
@@ -65,16 +78,74 @@ boundaries = [
 NumVars = size(qh, 1) * N;
 
 % Set RNG for deterministic behavior
-rng(36);
+% rng(36);
 
 % Generate a specific quadratic matrix using casadi
-x_cas = casadi.SX.sym('x_cas', 1, NumVars);
-q1_knot_cas = x_cas(1:N);
-q2_knot_cas = x_cas(N+1:2*N);
-q3_knot_cas = x_cas(2*N+1:3*N);
+    % Generate a casadi variable containing control points from all
+    % trajectories
+    x_cas = casadi.SX.sym('x_cas', 1, NumVars);
+    
+    % Distribute control points between trajectories
+    q1_knot_cas = x_cas(1:N);
+    q2_knot_cas = x_cas(N+1:2*N);
+    q3_knot_cas = x_cas(2*N+1:3*N);
+    
+    % Interpolate each one
+    cq1_cas = splineInterpolation2(skp, q1_knot_cas, p, boundaries);
+    cq2_cas = splineInterpolation2(skp, q2_knot_cas, p, boundaries);
+    cq3_cas = splineInterpolation2(skp, q3_knot_cas, p, boundaries);
+    
+    q1_cas = splineCoefToTrajectory(skp, cq1_cas, t, 1);    % Order = 1 to get velocities in 2nd row
+    q2_cas = splineCoefToTrajectory(skp, cq2_cas, t, 1);    % Order = 1 to get velocities in 2nd row
+    q3_cas = splineCoefToTrajectory(skp, cq3_cas, t, 1);    % Order = 1 to get velocities in 2nd row
+    
+    % Get sum squared of joint velocities
+    J = sum(q1_cas(2, :).^2 + q2_cas(2, :).^2 + q3_cas(2, :).^2);
+    
+    % Gradient
+    gradJ = jacobian(J, x_cas)';
+    
+    % Hessian
+    hessJ = jacobian(gradJ, x_cas)';
+    
+    % Create evaluation procedures
+    evalGradJ = casadi.Function('evalGradJ', {x_cas}, {gradJ});
+    evalHessJ = casadi.Function('evalHessJ', {x_cas}, {hessJ});
+    
+    % Check if hessian is constant (it should theoretically be)
+    x1_r = randn(1, NumVars);
+    x2_r = randn(1, NumVars);
+    
+    h1_r = full(evalHessJ(x1_r));
+    h2_r = full(evalHessJ(x2_r));
+    
+    if isequal(h1_r, h2_r)
+        fprintf("The Hessian is indeed constant, so the function must be quadratic.\n");
+        H = h1_r;   % Set hessian
+        H = (H + H')/2;
+    end
+    
+    % Get the linear vector
+%    	g1_r = full(evalGradJ(x1_r));
+%     g2_r = full(evalGradJ(x2_r));
+%     
+%     f1_r = g1_r - h1_r * x1_r';
+%     f2_r = g2_r - h2_r * x2_r';
+%     
+%     if isequal(f1_r, f2_r)
+%         fprintf("The Vector term is also constant.")
+%     end
+    f_cas = jacobian(J, x_cas)' - H * x_cas';
+    
+    evalLinearTerm = casadi.Function('evalLinearTerm', {x_cas}, {f_cas});
+    
+    f1_r = full(evalLinearTerm(x1_r));
+    f2_r = full(evalLinearTerm(x2_r));
+    
+%%
 
-% Generate a random linear vector
-f = randn(NumVars, 1);
+% The linear vector is defined by previous calculations
+f = zeros(NumVars, 1);
 
 % Define initial and final positions
 qi = qh(:, 1);

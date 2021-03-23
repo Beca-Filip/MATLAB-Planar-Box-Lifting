@@ -1,3 +1,6 @@
+%Animates a single sit-to-stand trajectory with data from subject
+%Charlotte.
+
 clear all; close all; clc;
 
 %% Include libs
@@ -9,26 +12,21 @@ addpath("../data/3DOF/Charlotte")
 load Charlotte.mat
 
 % Extract a piece of the trajectories
-TimeSpan=4138:4300;
+TimeSpan=4078:4300;
 q=q(:,TimeSpan); qh = q;
 dq=dq(:, TimeSpan); dqh = dq;
 ddq=ddq(:, TimeSpan); ddqh = ddq;
 dddq=dddq(:, TimeSpan); dddqh = dddq;
 clear q dq ddq dddq
-
-F_FP1 = fp.FP1.Forcers(TimeSpan, :)';
-G_FP1 = fp.FP1.Momentrs(TimeSpan, :)';
-F_FP2 = fp.FP2.Forcers(TimeSpan, :)';
-G_FP2 = fp.FP2.Momentrs(TimeSpan, :)';
 %% Define time related parameters
 % Number of points
-M = 163;
+M = 223;
 
 % Start time
 t0 = 0;
 
 % Final time
-tf = 1.62*4;
+tf = 2.22*2;
 
 % Time vector
 t = linspace(t0, tf, M);

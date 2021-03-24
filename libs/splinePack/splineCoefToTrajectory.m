@@ -1,9 +1,9 @@
 function f = splineCoefToTrajectory(knots, coefs, x, order)
-%SPLINECOEFFTOTRAJECTORY takes in the knots and the coefficients values for
+%SPLINECOEFTOTRAJECTORY takes in the knots and the coefficients values for
 %a spline interpolated function and calculates its values for the given
 %input vector.
 %
-%   y = SPLINECOEFFTOTRAJECTORY(knots, coefs, x, order) takes in the knots
+%   y = SPLINECOEFTOTRAJECTORY(knots, coefs, x, order) takes in the knots
 %   for which the spline interpolation was calculated, the coefficients of 
 %   the splines and the vector of inputs x, for which the function value is
 %   to be calculated. Also takes in the order of the highest derivative of

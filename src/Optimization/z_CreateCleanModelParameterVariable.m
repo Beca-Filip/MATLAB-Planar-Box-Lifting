@@ -1,48 +1,75 @@
 clear all; close all; clc;
 
 % Add the data to path
-addpath("../../data");
+addpath("../../data/3DOF/Charlotte/");
 
 % Load human model parameters
+load Charlotte.mat
 load param_variable.mat
 
 % Create new param variable
-modelParams.MX1 = param.MX1;
-modelParams.MX2 = param.MX2;
-modelParams.MX3 = param.MX3;
+modelParam.MX1 = param.MX1;
+modelParam.MX2 = param.MX2;
+modelParam.MX3 = param.MX3;
 
-modelParams.MY1 = param.MY1;
-modelParams.MY2 = param.MY2;
-modelParams.MY3 = param.MY3;
+modelParam.MY1 = param.MY1;
+modelParam.MY2 = param.MY2;
+modelParam.MY3 = param.MY3;
 
-modelParams.M1 = param.M1;
-modelParams.M2 = param.M2;
-modelParams.M3 = param.M3;
+modelParam.M1 = param.M1;
+modelParam.M2 = param.M2;
+modelParam.M3 = param.M3;
+modelParam.Mtot = modelParam.M1 + modelParam.M2 + modelParam.M3;
 
-modelParams.L1 = param.L1;
-modelParams.L2 = param.L2;
-modelParams.L3 = param.L3;
+modelParam.L1 = param.L1;
+modelParam.L2 = param.L2;
+modelParam.L3 = param.L3;
 
-modelParams.ZZ1 = param.ZZ1;
-modelParams.ZZ2 = param.ZZ2;
-modelParams.ZZ3 = param.ZZ3;
+modelParam.ZZ1 = param.ZZ1;
+modelParam.ZZ2 = param.ZZ2;
+modelParam.ZZ3 = param.ZZ3;
 
-modelParams.FV1 = param.FV1;
-modelParams.FV2 = param.FV2;
-modelParams.FV3 = param.FV3;
+modelParam.FV1 = param.FV1;
+modelParam.FV2 = param.FV2;
+modelParam.FV3 = param.FV3;
 
-% Save both function and new param variable
-zeroEW = @(N) zeroExternalWrenches3DOF(N);
-
-save("../../data/squat_param.mat", "param", "zeroEW");
+modelParam.ToePosition=mean(Markers.RTOE);
+modelParam.HellPosition=mean(Markers.RHEE);
 
 
-% Create function that returns zero external wrenches variable of size N
-function ZEW = zeroExternalWrenches3DOF(N)
-    ZEW.FX = zeros(3, N);
-    ZEW.FY = zeros(3, N);
-    ZEW.FZ = zeros(3, N);
-    ZEW.CX = zeros(3, N);
-    ZEW.CY = zeros(3, N);
-    ZEW.CZ = zeros(3, N);
-end
+modelParam.Gravity=-9.81;
+modelParam.TorqueLimits=param.taumax;
+modelParam.JointLimits=[...
+    [pi/2; 3*pi/4],...
+    [-5*pi/6; 0.1],...
+    [-0.1; 5*pi/6] ...
+    ];
+
+% Save new param variable
+save("../../data/3DOF/Squat/squat_param.mat", "modelParam");
+
+%%
+Mtoe = mean(Markers.RTOE);
+stoe = std(Markers.RTOE);
+Mhee = mean(Markers.RHEE);
+shee = std(Markers.RHEE);
+
+Xtoe = Mtoe + stoe .* randn(1000, 3);
+Xhee = Mhee + shee .* randn(1000, 3);
+
+figure;
+subplot(3, 1, 1)
+hold on;
+histogram(Xtoe(:, 1)*1000);
+histogram(Xhee(:, 3)*1000);
+xlabel('X Toe Position [mm]');
+subplot(3, 1, 2)
+hold on;
+histogram(Xtoe(:, 2)*1000);
+histogram(Xhee(:, 3)*1000);
+xlabel('Y Toe Position [mm]');
+subplot(3, 1, 3)
+hold on;
+histogram(Xtoe(:, 3)*1000);
+histogram(Xhee(:, 3)*1000);
+xlabel('Z Toe Position [mm]');

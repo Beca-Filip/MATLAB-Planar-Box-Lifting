@@ -3,7 +3,7 @@ clear all; close all; clc;
 %% Import stuff
 
 % Add the data to path
-addpath("../../data");          
+addpath("../../data/3DOF/Squat");          
 
 % Add model functions
 addpath("../Model"); 
@@ -49,15 +49,15 @@ Ts = (tf - t0) / (N-1);
 opts = struct();
 
 % Define segment lengths
-L = [param.L1, param.L2, param.L3];
+L = [modelParam.L1, modelParam.L2, modelParam.L3];
 
 % Define segment relative masses
-M = [param.M1, param.M2, param.M3] / param.Mtot;
+M = [modelParam.M1, modelParam.M2, modelParam.M3] / modelParam.Mtot;
 
 % Define individial segment COM position vectors and place them in a matrix
-C1 = [param.MX1; param.MY1; 0] / param.M1;
-C2 = [param.MX2; param.MY2; 0] / param.M2;
-C3 = [param.MX3; param.MY3; 0] / param.M3;
+C1 = [modelParam.MX1; modelParam.MY1; 0] / modelParam.M1;
+C2 = [modelParam.MX2; modelParam.MY2; 0] / modelParam.M2;
+C3 = [modelParam.MX3; modelParam.MY3; 0] / modelParam.M3;
 CMP = [C1, C2, C3];
 
 % Create a tool option for aesthetics
@@ -70,7 +70,9 @@ opts.legendParameters = {"Location", "SouthWest"};
 %% Artificial squatting motion 
 % Starting and ending position of squat defined
 q0 = [pi/2; 0; 0];
-qf = [3*pi/4; -3*pi/4; 2*pi/3];
+% q0 = modelParam.JointLimits(1, :)';
+qf = [2*pi/3; -2*pi/3; 2*pi/3];
+% qf = modelParam.JointLimits(2, :)';
 
 T0 = FKM_3DOF_Tensor(q0, L);
 Tf = FKM_3DOF_Tensor(qf, L);
@@ -83,10 +85,3 @@ q3 = [linspace(q0(3), qf(3), N), linspace(qf(3), q0(3), N)];
 q = [q1;q2;q3];
 
 Animate_3DOF(q, L, Ts, opts);
-
-%% Use CASADI Variables
-q_cas = casadi.SX.sym('q1_cas', 30, 1);
-
-eqCon = [(q_cas(1)- pi/2); (q_cas(11) - 0); (q_cas(21) - 0)];
-gradEqCon = jacobian(eqCon, q_cas);
-eval(eqCon, "q_cas", zeros(30, 1))

@@ -178,5 +178,9 @@ GAMMA = [GAM1; GAM2; GAM3];
 %disp(["l1:", num2str(length(E10)), "l2:", num2str(length(E20)), "l3:", num2str(length(E30)), ...
   %    "l4:", num2str(length(N10)), "l5:", num2str(length(N20)), "l6:", num2str(length(N30))]);
 % EN(1,:)=E10;EN(2,:)=E20;EN(3,:)=E30;EN(4,:)=N10;EN(5,:)=N20;EN(6,:)=N30;
+E30 = repmat(E30, 1, length(E10));
+N10 = repmat(N10, 1, length(N30));
+N20 = repmat(N20, 1, length(N30));
+% fprintf("Size: [%.4f, %.4f]\n", size(E10), size(E20), size(E30), size(N10), size(N20), size(N30));
 EN = [E10; E20; E30; N10; N20; N30];
 end

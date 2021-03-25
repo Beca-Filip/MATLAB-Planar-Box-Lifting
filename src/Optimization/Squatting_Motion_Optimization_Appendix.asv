@@ -188,7 +188,7 @@ plot(t, GAMMA_normalised_star(1, :), 'LineWidth', 2, 'DisplayName', 'Torques of 
 legend('Location','Best');
 xlabel('time [s]');
 ylabel('joint torque [Nm]');
-title({'Comparison of normalised squared joint torques'});
+title({'Comparison of squared joint torques'});
 grid;
 
 % Crude values of the costs
@@ -201,8 +201,7 @@ barLocations = 1:numbars;
 figure;
 hold on;
 barChart = bar(barLocations, barValues);
-barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
-barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
+barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);    
 xticks(barLocations);
 xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
 ylabel('Cost function value');

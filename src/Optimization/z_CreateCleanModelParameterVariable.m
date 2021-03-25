@@ -34,7 +34,7 @@ modelParam.FV2 = param.FV2;
 modelParam.FV3 = param.FV3;
 
 modelParam.ToePosition=mean(Markers.RTOE);
-modelParam.HellPosition=mean(Markers.RHEE);
+modelParam.HeelPosition=mean(Markers.RHEE);
 
 
 modelParam.Gravity=-9.81;
@@ -42,7 +42,7 @@ modelParam.TorqueLimits=param.taumax;
 modelParam.JointLimits=[...
     [pi/2; 3*pi/4],...
     [-5*pi/6; 0.1],...
-    [-0.1; 5*pi/6] ...
+    [-0.1; 2*pi/3] ...
     ];
 
 % Save new param variable

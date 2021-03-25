@@ -101,6 +101,11 @@ optTolerance.MulInitialConditions = DefaultConstraintTolerance / TolInitialCondi
 % Final condition tolerances
 TolFinalConditions = 1e-3;
 optTolerance.MulFinalConditions = DefaultConstraintTolerance / TolFinalConditions;
+
+% Center of Pressure within bounds constraints
+TolCOPConditions = 1e-3;  % in meters
+optTolerance.MulCOPConditions = DefaultConstraintTolerance / TolCOPConditions;
+
 %% Optimization pipeline
 
 % Generate linear constraint matrices
@@ -128,6 +133,9 @@ op = optimoptions('fmincon',...
                   'SpecifyObjectiveGradient', true, ...
                   'SpecifyConstraintGradient', true,...
                   'TolFun', 1e-3, ...
+                  'CheckGradients', true, ...
+                  'FiniteDifferenceType', 'Central', ...
+                  'FiniteDifferenceStepSize', 1e-4, ...
                   'UseParallel', 'Always' ...
                   );
               
@@ -149,7 +157,6 @@ else
     fprintf("The initial solution is infeasible.\n");
 end
 
-pause;
 
 % Lower and upper boundss
 One = ones(1, itpParam.NumControlPoints);

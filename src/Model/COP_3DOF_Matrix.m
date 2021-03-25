@@ -15,7 +15,7 @@ function COP = COP_3DOF_Matrix(q,dq,ddq,EW,modelParam)
 % COPz = Mx / Fy
 COP = [...
     EN(6, :) ./ EN(2, :);
-    0;
+    zeros(1, size(EN, 2));
     EN(1, :) ./ EN(2, :);
     ];
 

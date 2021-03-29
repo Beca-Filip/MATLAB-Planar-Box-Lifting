@@ -8,9 +8,9 @@ t = itpParam.KnotValues;
 p = itpParam.InterpolationOrder;
 bndcnd = itpParam.BoundaryConditions;
 
+% Interpolation for constraints
 N = itpParam.ItpResolutionConstraints;
 tc = linspace(t(1), t(end), N);
-
 
 % Unpack optimization variable
 q1_knot = x(1:n);
@@ -69,6 +69,11 @@ XCOP = COP(1, :);
 XCOP_high = modelParam.HeelPosition(1, 1);
 XCOP_low  = modelParam.ToePosition(1, 1);
 
+%% Intermediate Computation: Joint Torques
+
+% Compute the joint torques
+[GAMMA, ~] = Dyn_3DOF(q,dq,ddq,ZEW,modelParam);
+
 %% Inequality constraints
 
 C = [
@@ -76,6 +81,12 @@ C = [
     optTolerance.MulFinalConditions * (hhf - modelParam.FinalHipHeightPercentage * sum(L(1:end-1)));
     optTolerance.MulCOPConditions * (XCOP - XCOP_high)';
     optTolerance.MulCOPConditions * (-XCOP + XCOP_low)';
+    optTolerance.MulTorqueLimits * (GAMMA(1, :)' - modelParam.TorqueLimits(1));
+    optTolerance.MulTorqueLimits * (-GAMMA(1, :)' - modelParam.TorqueLimits(1));
+    optTolerance.MulTorqueLimits * (GAMMA(2, :)' - modelParam.TorqueLimits(2));
+    optTolerance.MulTorqueLimits * (-GAMMA(2, :)' - modelParam.TorqueLimits(2));
+    optTolerance.MulTorqueLimits * (GAMMA(3, :)' - modelParam.TorqueLimits(3));
+    optTolerance.MulTorqueLimits * (-GAMMA(3, :)' - modelParam.TorqueLimits(3));
     ];
 
 %% Equality constraints

@@ -106,6 +106,10 @@ optTolerance.MulFinalConditions = DefaultConstraintTolerance / TolFinalCondition
 TolCOPConditions = 1e-3;  % in meters
 optTolerance.MulCOPConditions = DefaultConstraintTolerance / TolCOPConditions;
 
+% Torque limits constriants
+TolTorqueLimits = 1e-3;
+optTolerance.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
+
 %% Optimization pipeline
 
 % Generate linear constraint matrices

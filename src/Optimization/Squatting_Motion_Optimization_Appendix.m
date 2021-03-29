@@ -5,7 +5,7 @@ figure;
 
 subplot(3, 1, 1)
 hold on;
-stem(itpParam.KnotValues, q1_knot_0, 'DisplayName', 'InitialPoints q_1');
+plot(itpParam.KnotValues, q1_knot_0, 'DisplayName', 'InitialPoints q_1');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(1, 1)*two1, 'DisplayName', 'Lower bound');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(2, 1)*two1, 'DisplayName', 'Upper bound');
 legend('Location','Best');
@@ -15,7 +15,7 @@ title({'1^{st} third of Optimization Variables'; 'Joint 1 Control Points'});
 
 subplot(3, 1, 2)
 hold on;
-stem(itpParam.KnotValues, q2_knot_0, 'DisplayName', 'InitialPoints q_2');
+plot(itpParam.KnotValues, q2_knot_0, 'DisplayName', 'InitialPoints q_2');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(1, 2)*two1, 'DisplayName', 'Lower bound');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(2, 2)*two1, 'DisplayName', 'Upper bound');
 legend('Location','Best');
@@ -25,7 +25,7 @@ title({'2^{nd} third of Optimization Variables'; 'Joint 2 Control Points'});
 
 subplot(3, 1, 3)
 hold on;
-stem(itpParam.KnotValues, q3_knot_0, 'DisplayName', 'InitialPoints q_3');
+plot(itpParam.KnotValues, q3_knot_0, 'DisplayName', 'InitialPoints q_3');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(1, 3)*two1, 'DisplayName', 'Lower bound');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(2, 3)*two1, 'DisplayName', 'Upper bound');
 legend('Location','Best');
@@ -112,7 +112,7 @@ grid;
 %% Calculate Torques for Initial Trajectories and Compare with Optimal Trajectories
 
 % Flags
-plotTorqueLimits = false;
+plotTorqueLimits = true;
 
 % Get the zero external wrenches object
 ZEW = zeroExternalWrenches3DOF(size(q_star, 2));

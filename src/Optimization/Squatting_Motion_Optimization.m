@@ -80,6 +80,9 @@ itpParam.ItpResolutionCost = 50;
 % Initial squatting position
 modelParam.InitialAngles = [pi/2; 0; 0];
 
+% Crunch time in percentage of total time
+modelParam.CrunchTimePercentage = 0.5;
+
 % Final squatting neck position percentage
 modelParam.CrunchNeckHeightPercentage = 0.6;
 
@@ -99,8 +102,8 @@ TolInitialConditions = 1e-3;
 optTolerance.MulInitialConditions = DefaultConstraintTolerance / TolInitialConditions;
 
 % Final condition tolerances
-TolFinalConditions = 1e-3;
-optTolerance.MulFinalConditions = DefaultConstraintTolerance / TolFinalConditions;
+TolCrunchConditions = 1e-3;
+optTolerance.MulCrunchConditions = DefaultConstraintTolerance / TolCrunchConditions;
 
 % Center of Pressure within bounds constraints
 TolCOPConditions = 1e-3;  % in meters

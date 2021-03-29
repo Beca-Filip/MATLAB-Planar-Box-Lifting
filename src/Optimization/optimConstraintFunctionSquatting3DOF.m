@@ -39,20 +39,39 @@ ddq = [qdqddq1(3, :); qdqddq2(3, :); qdqddq3(3, :)];
 
 %% Intermediate Computations: Final State Neck and Hip Heights
 
-% Find the final joint angles
-qf = [q1_knot(end); q2_knot(end); q3_knot(end)];
+% % Find the final joint angles
+% qf = [q1_knot(end); q2_knot(end); q3_knot(end)];
+% 
+% % Make a segment length vector
+% L = [modelParam.L1; modelParam.L2; modelParam.L3];
+% 
+% % Call the appropriate FKM function for the final state
+% Tf = FKM_3DOF_Cell(qf, L);
+% 
+% % Get final neck height
+% nhf = Tf{end, 1}(2, 4);
+% 
+% % Get final hip height
+% hhf = Tf{end-1, 1}(2, 4);
+
+% Find the time index where crunch is happening
+icrunch = round(N * modelParam.CrunchTimePercentage);
+
+% Get the joint angles at crunch time
+qc = q(:, icrunch);
 
 % Make a segment length vector
 L = [modelParam.L1; modelParam.L2; modelParam.L3];
 
-% Call the appropriate FKM function for the final state
-Tf = FKM_3DOF_Cell(qf, L);
+% Call the appropriate FKM function for the crunch state
+Tc = FKM_3DOF_Cell(qc, L);
 
-% Get final neck height
-nhf = Tf{end, 1}(2, 4);
+% Get crunch neck height
+nhc = Tc{end, 1}(2, 4);
 
-% Get final hip height
-hhf = Tf{end-1, 1}(2, 4);
+% Get crunch hip height
+hhc = Tc{end-1, 1}(2, 4);
+
 
 %% Intermediate Computation: Position of Center of Pressure
 
@@ -77,8 +96,8 @@ XCOP_low  = modelParam.ToePosition(1, 1);
 %% Inequality constraints
 
 C = [
-    optTolerance.MulFinalConditions * (nhf - modelParam.CrunchNeckHeightPercentage * sum(L));
-    optTolerance.MulFinalConditions * (hhf - modelParam.CrunchHipHeightPercentage * sum(L(1:end-1)));
+    optTolerance.MulCrunchConditions * (nhc - modelParam.CrunchNeckHeightPercentage * sum(L));
+    optTolerance.MulCrunchConditions * (hhc - modelParam.CrunchHipHeightPercentage * sum(L(1:end-1)));
     optTolerance.MulCOPConditions * (XCOP - XCOP_high)';
     optTolerance.MulCOPConditions * (-XCOP + XCOP_low)';
     optTolerance.MulTorqueLimits * (GAMMA(1, :)' - modelParam.TorqueLimits(1));

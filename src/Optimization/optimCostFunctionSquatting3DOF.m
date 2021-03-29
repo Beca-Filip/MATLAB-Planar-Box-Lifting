@@ -47,7 +47,7 @@ ZEW = zeroExternalWrenches3DOF(itpParam.ItpResolutionCost);
 %% Final Computation:
 
 % Cost Function
-J = -sum(sum(GAMMA.^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
+J = sum(sum(GAMMA.^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
 
 end
 

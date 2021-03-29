@@ -51,7 +51,7 @@ if nargin > 3 && isfield(opts, "tool")
     % Tool orientation at each timestep
     toolOrientation = sum(q);     
     % Call the tool mesh calculating function
-    [Xtool, Ytool] = Animate_ToolPoints(toolOrientation, X(end, :), Y(end, :), tool);
+    [Xtool, Ytool, Ltool] = Animate_ToolPoints(toolOrientation, X(end, :), Y(end, :), tool);
 end
 
 % Create the figure and initialize handles

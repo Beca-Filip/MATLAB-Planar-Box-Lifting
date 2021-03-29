@@ -1,10 +1,11 @@
-function [Xt, Yt] = Animate_ToolPoints(theta, Xe, Ye, tool)
+function [Xt, Yt, Ltool] = Animate_ToolPoints(theta, Xe, Ye, tool)
 %ANIMATE_TOOLPOINTS helps with the animation of the tool. Calculates the
 %plotting positions of the tool.
 %
-%   [Xt, Yt] = ANIMATE_TOOLPOINTS(theta, Xe, Ye, tool) returns tool
+%   [Xt, Yt, Ltool] = ANIMATE_TOOLPOINTS(theta, Xe, Ye, tool) returns tool
 %   coordinates of a specified type and specified by parameters, in a
-%   (Number of tool coordinates x Number of samples) matrix.
+%   (Number of tool coordinates x Number of samples) matrix. Also returns
+%   the tool's longest dimension within Ltool.
 %       theta - angle of the end effector
 %       Xe - x position of the end effector
 %       Ye - y position of the end effector
@@ -39,17 +40,17 @@ N = length(theta);
 if isequal(lower(tool.type), "circle")
     
     % Extract useful constants
-    Dtool = tool.diameter;
+    Ltool = tool.diameter;
     Npts = 50;
     
     % Calculate center of the circle at each timestep
-    Xcenter = Xe + Dtool/2 * cos(theta);
-    Ycenter = Ye + Dtool/2 * sin(theta);
+    Xcenter = Xe + Ltool/2 * cos(theta);
+    Ycenter = Ye + Ltool/2 * sin(theta);
     
     % Create a generic circle around the origin, using parametrized form
     phi = linspace(0, 2*pi, Npts)';
-    Xcircle = Dtool / 2 * cos(phi);
-    Ycircle = Dtool / 2 * sin(phi);
+    Xcircle = Ltool / 2 * cos(phi);
+    Ycircle = Ltool / 2 * sin(phi);
     
     % Tool points: At each timestep, add the center coordinates to generic
     % circle coordinates

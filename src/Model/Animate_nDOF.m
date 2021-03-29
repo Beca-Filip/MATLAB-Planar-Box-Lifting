@@ -1,19 +1,19 @@
-function Animate_3DOF(q, L, Ts, varargin)
-%ANIMATE_2DOF animates a 3DOF planar robot, given the joint position
+function Animate_nDOF(q, L, Ts, varargin)
+%ANIMATE_nDOF animates a n-DOF planar robot, given the joint position
 %vectors at successive samples, the robot segment lengths and the sampling
 %rate.
 %   ANIMATE_3DOF(q, L, Ts) takes in the matrix of joint angles q, the
-%   size being (3 x Number of samples), the 3D vector of segment lengths L,
+%   size being (n x Number of samples), the nD vector of segment lengths L,
 %   and the sampling rate Ts in seconds (should be superior to 0.001s).
 %   Creates a figure and animates the robot in a plane.
 %
 %   opts.tool = struct("type", "hand", "length", 1);
-%   ANIMATE_3DOF(q, L, Ts, opts) plots an additional tool shape at the
+%   ANIMATE_nDOF(q, L, Ts, opts) plots an additional tool shape at the
 %   end-effector location. The parameters of the tool should be given
 %   according to the function ANIMATE_TOOLPOINTS.
 %
 %   opts.bgrPlot = @() plot(0.1*randn(1, 20), 0.1*randn(1, 20));
-%   ANIMATE_3DOF(q, L, Ts, opts) takes in an additional function
+%   ANIMATE_nDOF(q, L, Ts, opts) takes in an additional function
 %   bgrPlot, which plots someting in the background of the figure.
 %
 %   See also ANIMATE_TOOLPOINTS.
@@ -25,15 +25,13 @@ if nargin > 3
 end
 
 % Exctract useful information
-N = size(q, 2);
-L1 = L(1);
-L2 = L(2);
-L3 = L(3);
+n = size(q, 1); % Number of joints
+N = size(q, 2); % Number of samples
 Ltool = min(L) * 0.25;
 
 % Use the FMK_eDOF_Tensor function to find the the forward kinematics model
 % of all joints frames
-T = FKM_3DOF_Tensor(q, L);
+T = FKM_nDOF_Tensor(q, L);
 
 % Extract the X and Y coordinates all segments across all times
 X = squeeze(T(1, 4, :, :));

@@ -81,10 +81,10 @@ itpParam.ItpResolutionCost = 50;
 modelParam.InitialAngles = [pi/2; 0; 0];
 
 % Final squatting neck position percentage
-modelParam.FinalNeckHeightPercentage = 0.6;
+modelParam.CrunchNeckHeightPercentage = 0.6;
 
 % Final squatting hip position percentage
-modelParam.FinalHipHeightPercentage = 0.4;
+modelParam.CrunchHipHeightPercentage = 0.4;
 
 % Imaginary starting and ending position of squat defined
 q0 = [pi/2; 0; 0];

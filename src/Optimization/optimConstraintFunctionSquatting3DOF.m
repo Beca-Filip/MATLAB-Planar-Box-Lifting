@@ -77,8 +77,8 @@ XCOP_low  = modelParam.ToePosition(1, 1);
 %% Inequality constraints
 
 C = [
-    optTolerance.MulFinalConditions * (nhf - modelParam.FinalNeckHeightPercentage * sum(L));
-    optTolerance.MulFinalConditions * (hhf - modelParam.FinalHipHeightPercentage * sum(L(1:end-1)));
+    optTolerance.MulFinalConditions * (nhf - modelParam.CrunchNeckHeightPercentage * sum(L));
+    optTolerance.MulFinalConditions * (hhf - modelParam.CrunchHipHeightPercentage * sum(L(1:end-1)));
     optTolerance.MulCOPConditions * (XCOP - XCOP_high)';
     optTolerance.MulCOPConditions * (-XCOP + XCOP_low)';
     optTolerance.MulTorqueLimits * (GAMMA(1, :)' - modelParam.TorqueLimits(1));

@@ -16,20 +16,34 @@ function Animate_nDOF(q, L, Ts, varargin)
 %   ANIMATE_nDOF(q, L, Ts, opts) takes in an additional function
 %   bgrPlot, which plots someting in the background of the figure.
 %
+%   opts.handleInits = {@()plot(1, 0)};
+%   opts.callback = @(ii, handle) handle.YData = (2*pi*(ii / 50)))
+%   ANIMATE_nDOF(q, L, Ts, opts) takes in two additional functions, 
+%   handleInits and callback. handleInits is meant to initialize plot
+%   handles which will later be updated by the callback function.
+%   In the example we'll have a point which will have coordinates
+%   (1,sin(2*pi*(ii/50)) where ii is the number of the current frame.
+%
 %   See also ANIMATE_TOOLPOINTS.
 
-% If options are passed
+%% Options initialization
+% #Input check and initialization of the options structure: opts
 if nargin > 3
-    % Initialize the opts variable
+    % Initialize the opts variable with the value of the additional
+    % argument
     opts = varargin{1};
+else
+    % Create empty opts
+    opts = [];
 end
 
-% Exctract useful information
+%% Robot Forward Kinematics and Tool-Plotting
+% Exctract useful information / constants
 n = size(q, 1); % Number of joints
 N = size(q, 2); % Number of samples
 Ltool = min(L) * 0.25;
 
-% Use the FMK_eDOF_Tensor function to find the the forward kinematics model
+% Use the FMK_nDOF_Tensor function to find the the forward kinematics model
 % of all joints frames
 T = FKM_nDOF_Tensor(q, L);
 
@@ -41,7 +55,8 @@ Y = squeeze(T(2, 4, :, :));
 % Initialize toolplot to 0's 
 Xtool = zeros(1, N);
 Ytool = zeros(1, N);
-% If the tool is indeed passed as an argument
+
+% #Input check
 if nargin > 3 && isfield(opts, "tool")
     % Assign the argument to a tool variable
     tool = opts.tool;        
@@ -51,14 +66,35 @@ if nargin > 3 && isfield(opts, "tool")
     [Xtool, Ytool, Ltool] = Animate_ToolPoints(toolOrientation, X(end, :), Y(end, :), tool);
 end
 
-% Create the figure and initialize handles
-fig = figure;
+%% Figure creation and handle initialization
+% #Storing Options: Create the figure, store its handle inside options
+opts.Figure = figure;
 hold all;
 
+% Initialize handles for robot, joints and tool, and store them inside a
+% single graphical objects array
 h_robot = plot(0, 0, 'LineWidth', 2, 'Color', 'k', 'DisplayName', 'RobotHand');     % Robot arm handle
 h_joints = plot(0, 0, 'ko', 'MarkerSize', 10, 'DisplayName', 'RobotJoints');        % Robot joints handle
 h_tool = plot(0, 0, 'LineWidth', 2, 'Color', 'k', 'HandleVisibility', 'Off');       % Robot tool handle
 
+h_all = [h_robot; h_joints; h_tool];
+
+% #Input check and initialization of the handles given by opts
+if nargin > 3 && isfield(opts, "handleInits")
+    
+    % #Storing Options: Initialize an array of graphical objects object
+    opts.numHandles = numel(opts.handleInits);
+    opts.handles = gobjects(1, opts.numHandles);
+    
+    % Storing Options: For each handle initialization
+    for ii = 1 : opts.numHandles
+        % Call the function to get handle initialised
+        opts.handles(ii) = opts.handleInits{ii}();
+    end
+    disp(opts.handles);
+end
+
+%% Figure Axes, Legends, Aspect, Title, Plot Background
 % Fix axis limits
 x_low = -sum(L)-Ltool;
 x_high = sum(L)+Ltool;
@@ -66,13 +102,14 @@ y_low = -sum(L)-Ltool;
 y_high = sum(L)+Ltool;
 xlim([x_low, x_high]);
 ylim([y_low, y_high]);
+% Titles and labels
 title('3DOF Planar bot');
 xlabel('X-axis [m]');
 ylabel('Y-axis [m]');
 grid;
 pbaspect([1 1 1])
 
-% Generate background plot
+% #Input check and generation of a background plot
 if nargin > 3 && isfield(opts, "bgrPlot")    
     % Load background plotting function handle into variable
     Animate_bgrPlot = opts.bgrPlot;
@@ -81,7 +118,7 @@ if nargin > 3 && isfield(opts, "bgrPlot")
     Animate_bgrPlot();
 end
 
-% Generate legend (by default do not if not set by options
+% #Input check and generation of a legend
 if nargin > 3 && isfield(opts, "generateLegend") && opts.generateLegend
     % If legend parameters are passed, pass them on
     if isfield(opts, "legendParameters")
@@ -92,17 +129,30 @@ if nargin > 3 && isfield(opts, "generateLegend") && opts.generateLegend
     end
 end
 
+%% Timer creation, Timer Data, Timer Start, End and Callback functions.
+
 % Create a timer to repeat the update of the plot handles
 % Initialize it
 t = timer;
+
+% #Input Check and storage of movie frames in timer field UserData
+if nargin > 3 && isfield(opts, "saveas")
+    % Preallocate a struct array variable within UserData in which to store 
+    % frames
+    for ii = N : -1 : 1
+        t.UserData.savedFrames(ii).cdata = [];
+        t.UserData.savedFrames(ii).colormap = [];
+    end
+    % #Storing Options: Save framerate in options structure
+    opts.FrameRate = 1/Ts;
+end
+
 % Create an starting function
-% t.StartFcn = @(~,thisEvent)disp("Plotting...");
 t.StartFcn = @timerBirthFunction;
-% Create a callback function
-t.TimerFcn = @(thisTimer, ~)updateHandles(h_robot, h_joints, h_tool, X(:, thisTimer.TasksExecuted), Y(:, thisTimer.TasksExecuted), Xtool(:, thisTimer.TasksExecuted), Ytool(:, thisTimer.TasksExecuted));
-% Create an stopping function
-% t.StopFcn = @(~,thisEvent)disp("Plotting ended.");
-t.StopFcn = @timerKillFunction;
+% #Storing Options End, Use Options: Create a callback function
+t.TimerFcn = @(thisTimer, ~)updateHandles(thisTimer, h_all, X, Y, Xtool, Ytool, opts);
+% #Storing Options End, Use Options: Create a stopping function
+t.StopFcn = @(thisTimer, thisEvent) timerKillFunction(thisTimer, thisEvent, opts);
 % The period of the function callback in seconds
 t.Period = Ts;
 % Number of times to perform the callback
@@ -116,26 +166,90 @@ start(t);
 
 end
 
-function updateHandles(h_robot, h_joints, h_tool, X, Y, Xtool, Ytool)
-% Update robot arm handle as the piece-wise line segment whose points are
-% the robots joint frame coordinates
-h_robot.XData = X;
-h_robot.YData = Y;
+function updateHandles(thisTimer, h_all, X, Y, Xtool, Ytool, opts)
+    %UPDATEHANDLES gets the timer, the main handles, the main data and the
+    %options. It updates all the main handles with the main data, following
+    %predefined rules. It updates optional data trough callback stored in 
+    %options. It also stores movie frames within the timer structure so
+    %that they may be carried over out of this particular function.
+    
+    % Get the current iteration
+    ii = thisTimer.TasksExecuted;
+    
+    %% Update Main Handles with Main Data
+    % Update robot arm handle as the piece-wise line segment whose points are
+    % the robots joint frame coordinates
+    h_all(1).XData = X(:, ii);
+    h_all(1).YData = Y(:, ii);
 
-% Update the robot joints handle as the joint frame centers, exclude
-% end-effector
-h_joints.XData = X(1:end-1);
-h_joints.YData = Y(1:end-1);
+    % Update the robot joints handle as the joint frame centers, exclude
+    % end-effector
+    h_all(2).XData = X(1:end-1, ii);
+    h_all(2).YData = Y(1:end-1, ii);
 
-% Update the tool handle
-h_tool.XData = Xtool;
-h_tool.YData = Ytool;
+    % Update the tool handle
+    h_all(3).XData = Xtool(:, ii);
+    h_all(3).YData = Ytool(:, ii);
+
+    %% Update Optional Data
+    % #Input check and the update of all optional handles using the
+    % optional callbacks
+    if isfield(opts, "callback") && isfield(opts, "handles")
+        % Call the callback function with desired handles and iteration number
+        opts.callback(ii, opts.handles);
+    end
+
+    %% Frame Storage
+    % #Input check and current frame storage
+    if isfield(opts, "saveas")
+        % Get current frame
+        thisTimer.UserData.savedFrames(ii) = getframe(opts.Figure);
+    end
 end
 
 function timerBirthFunction(thisTimer, thisEvent)
-fprintf("Animation running...\n");
+    %TIMERBIRTHFUNCTION prints a message to the user to anounce that the
+    %animation is running.
+    % Print message to user
+    fprintf("Animation running...\n");
 end
-function timerKillFunction(thisTimer, thisEvent)
-fprintf("Animation ended.\n");
-delete(thisTimer);
+function timerKillFunction(thisTimer, thisEvent, opts)
+    %TIMERKILLFUNCTION prints a message to the user to anounce that the
+    %animation has ended. Optionally saves stored movie frames.
+    
+    % Print message to user
+    fprintf("Animation ended.\n");
+
+    %% Storing Movie Frames
+    % #Input Check and storage of the movie
+    if isfield(opts, "saveas")
+        % Print message to user
+        fprintf("Saving animation...\n");
+
+        % Create a video writer object
+        vw = VideoWriter(opts.saveas.name, 'Archival');
+        
+        % Set framerate parameter
+        vw.FrameRate = opts.FrameRate;
+        
+        % Get the number of frames
+        FrameCount = length(thisTimer.UserData.savedFrames);
+        
+        % Open the video for writing
+        vw.open();
+        
+        % Write each frame
+        for ii = 1 : FrameCount
+            vw.writeVideo(thisTimer.UserData.savedFrames(ii));
+        end
+        
+        % Close the video
+        vw.close();
+        
+        % Print message to user
+        fprintf(strcat("Animation saved as : ", opts.saveas.name, ".\n"));
+    end
+    
+    % Delete the timer
+    delete(thisTimer);
 end

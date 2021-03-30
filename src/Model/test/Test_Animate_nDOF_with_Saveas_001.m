@@ -11,11 +11,16 @@ addpath("..")
 % Load the parameters
 load Charlotte.mat
 
-% Take whole trajectories
-qh = q;
-dqh = dq;
-ddqh= ddq;
-dddqh = dddq;
+% Take a piece of the trajectories
+TimeSpan = 4078:4300;
+qh = q(:, TimeSpan);
+dqh = dq(:, TimeSpan);
+ddqh= ddq(:, TimeSpan);
+dddqh = dddq(:, TimeSpan);
+% qh = q;
+% dqh = dq;
+% ddqh= ddq;
+% dddqh = dddq;
 
 clear q dq ddq dddq
 %% Define time related parameters
@@ -69,6 +74,9 @@ opts.tool = struct("type", "circle", "diameter", min(L)*0.25);
 % Create a legend for aesthetics
 opts.generateLegend = true;
 opts.legendParameters = {"Location", "SouthWest"};
+
+% Save movie
+opts.saveas.name = "mov2";
 
 % Call the animate function
 Animate_nDOF(qh, L, Ts, opts);

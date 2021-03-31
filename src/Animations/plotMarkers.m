@@ -81,7 +81,7 @@ disp(ln(Order));
 rn = rn(Order);
 ln = ln(Order);
 
-%% Prepare plotting
+%% Prepare Animation
 
 % Sampling time
 Ts = 0.01;
@@ -104,7 +104,8 @@ grid;
 % legend;
 set(gca,'DataAspectRatio',[1 1 1])
 % view(90, 50);
-view(-121.6899,-74.1249);
+% view(-121.6899,-74.1249);
+% view(-121.6899,30);
 
 % Create a timer to repeat the update of the plot handles
 % Initialize it
@@ -130,7 +131,6 @@ t.ExecutionMode = 'fixedRate';
 % Start the timer
 start(t);
 
-%%
 
 function animateCallback(n, handleR, handleL, handleO, RDATA, LDATA, ODATA, Order)
     % Plot those data

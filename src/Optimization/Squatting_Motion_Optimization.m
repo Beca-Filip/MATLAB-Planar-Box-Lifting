@@ -1,4 +1,5 @@
-clear all; close all; clc;
+% clear all;
+close all; clc;
 
 %% Import libraries and data
 
@@ -49,7 +50,7 @@ Ts = (tf - t0) / (N-1);
 %% Spline interpolation parameters
 
 % Create a structure containing interpolation parameters
-% Number of knots
+% Number of knots (Must be an odd number because of the way we form the initial solution)
 itpParam.NumControlPoints = 11;
 
 % Spline Knot Indices
@@ -77,8 +78,11 @@ itpParam.ItpResolutionCost = 50;
 
 %% Define other input parameters to the model
 
-% Initial squatting position
+% Initial squatting position (upright)
 modelParam.InitialAngles = [pi/2; 0; 0];
+
+% Final squatting position (upright)
+modelParam.FinalAngles = [pi/2; 0; 0];
 
 % Crunch time in percentage of total time
 modelParam.CrunchTimePercentage = 0.5;
@@ -99,34 +103,43 @@ DefaultConstraintTolerance = optimoptions('fmincon').ConstraintTolerance;
 
 % Initial condition tolerances
 TolInitialConditions = 1e-3;
-optTolerance.MulInitialConditions = DefaultConstraintTolerance / TolInitialConditions;
+optParam.MulInitialConditions = DefaultConstraintTolerance / TolInitialConditions;
 
 % Final condition tolerances
+TolFinalConditions = 1e-3;
+optParam.MulFinalConditions = DefaultConstraintTolerance / TolFinalConditions;
+
+% Crunch condition tolerances
 TolCrunchConditions = 1e-3;
-optTolerance.MulCrunchConditions = DefaultConstraintTolerance / TolCrunchConditions;
+optParam.MulCrunchConditions = DefaultConstraintTolerance / TolCrunchConditions;
 
 % Center of Pressure within bounds constraints
 TolCOPConditions = 1e-3;  % in meters
-optTolerance.MulCOPConditions = DefaultConstraintTolerance / TolCOPConditions;
+optParam.MulCOPConditions = DefaultConstraintTolerance / TolCOPConditions;
 
 % Torque limits constriants
 TolTorqueLimits = 1e-3;
-optTolerance.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
+optParam.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
+
+%% Cost Function Parametrization:
+
+% Get the parametrization
+optParam.CostFunctionWeights = [1 0 0 0];
 
 %% Optimization pipeline
 
 % Generate linear constraint matrices
-[A, b, Aeq, beq] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optTolerance, modelParam);
+[A, b, Aeq, beq] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
 
 % Turn off warnings for code generation
 % MINGW Version not supported
 warning('off','all');
 
 % Generate nonlinear constraint computables
-optimGenerateComputableConstraintFunctionsSquatting3DOF(itpParam, optTolerance, modelParam);
+optimGenerateComputableConstraintFunctionsSquatting3DOF(itpParam, optParam, modelParam);
 
 % Generate cost function computable
-optimGenerateComputableCostFunctionSquatting3DOF(itpParam, optTolerance, modelParam);
+optimGenerateComputableCostFunctionSquatting3DOF(itpParam, optParam, modelParam);
 
 % Turn on warnings
 warning('on', 'all');
@@ -142,14 +155,21 @@ op = optimoptions('fmincon',...
                   'TolFun', 1e-3, ...
                   'CheckGradients', true, ...
                   'FiniteDifferenceType', 'Central', ...
-                  'FiniteDifferenceStepSize', 1e-4, ...
+                  'FiniteDifferenceStepSize', 8e-5, ...
                   'UseParallel', 'Always' ...
                   );
               
-% Initial solution
-q1_knot_0 = linspace(q0(1), qf(1), itpParam.NumControlPoints);
-q2_knot_0 = linspace(q0(2), qf(2), itpParam.NumControlPoints);
-q3_knot_0 = linspace(q0(3), qf(3), itpParam.NumControlPoints);
+% Initial solution ( Linearly spaced knots to bottom position followed by 
+% linearly spaced knots to standing position )
+q1_knot_0 = [linspace(q0(1), qf(1), (itpParam.NumControlPoints + 1) / 2),...
+             linspace(qf(1), q0(1), (itpParam.NumControlPoints + 1) / 2)];
+q1_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
+q2_knot_0 = [linspace(q0(2), qf(2), (itpParam.NumControlPoints + 1) / 2),...
+             linspace(qf(2), q0(2), (itpParam.NumControlPoints + 1) / 2)];
+q2_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
+q3_knot_0 = [linspace(q0(3), qf(3), (itpParam.NumControlPoints + 1) / 2),...
+             linspace(qf(3), q0(3), (itpParam.NumControlPoints + 1) / 2)];
+q3_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
 x0 = [q1_knot_0, q2_knot_0, q3_knot_0];
 
 % Evaluate initial solution
@@ -197,11 +217,12 @@ polycoefs2_star = splineInterpolation(itpParam.KnotValues, q2_knot_star, p, bndc
 polycoefs3_star = splineInterpolation(itpParam.KnotValues, q3_knot_star, p, bndcnd);
 
 % Get spline trajectories from coeffs
-q1_star = splineCoefToTrajectory(itpParam.KnotValues, polycoefs1_star, t, 2);
-q2_star = splineCoefToTrajectory(itpParam.KnotValues, polycoefs2_star, t, 2);
-q3_star = splineCoefToTrajectory(itpParam.KnotValues, polycoefs3_star, t, 2);
+q1_star = splineCoefToTrajectory(itpParam.KnotValues, polycoefs1_star, t, 3);
+q2_star = splineCoefToTrajectory(itpParam.KnotValues, polycoefs2_star, t, 3);
+q3_star = splineCoefToTrajectory(itpParam.KnotValues, polycoefs3_star, t, 3);
 
 % Pack trajectories into a single matrix
+dddq_star = [q1_star(4, :); q2_star(4, :); q3_star(4, :)];
 ddq_star = [q1_star(3, :); q2_star(3, :); q3_star(3, :)];
 dq_star = [q1_star(2, :); q2_star(2, :); q3_star(2, :)];
 q_star = [q1_star(1, :); q2_star(1, :); q3_star(1, :)];

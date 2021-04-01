@@ -60,11 +60,12 @@ polycoefs2_0 = splineInterpolation(itpParam.KnotValues, q2_knot_0, p, bndcnd);
 polycoefs3_0 = splineInterpolation(itpParam.KnotValues, q3_knot_0, p, bndcnd);
 
 % Get spline trajectories from coeffs
-q1_0 = splineCoefToTrajectory(itpParam.KnotValues, polycoefs1_0, t, 2);
-q2_0 = splineCoefToTrajectory(itpParam.KnotValues, polycoefs2_0, t, 2);
-q3_0 = splineCoefToTrajectory(itpParam.KnotValues, polycoefs3_0, t, 2);
+q1_0 = splineCoefToTrajectory(itpParam.KnotValues, polycoefs1_0, t, 3);
+q2_0 = splineCoefToTrajectory(itpParam.KnotValues, polycoefs2_0, t, 3);
+q3_0 = splineCoefToTrajectory(itpParam.KnotValues, polycoefs3_0, t, 3);
 
 % Pack trajectories into a single matrix
+dddq_0 = [q1_0(4, :); q2_0(4, :); q3_0(4, :)];
 ddq_0 = [q1_0(3, :); q2_0(3, :); q3_0(3, :)];
 dq_0 = [q1_0(2, :); q2_0(2, :); q3_0(2, :)];
 q_0 = [q1_0(1, :); q2_0(1, :); q3_0(1, :)];
@@ -107,6 +108,40 @@ legend('Location','Best');
 xlabel('time [s]');
 ylabel('joint angle [rad]');
 title({'Comparison of 3^{rd} joint trajectories'});
+grid;
+
+%% Compare Initial Joint Accelerations with Optimal Joint Accelerations
+
+figure;
+
+subplot(3, 1, 1)
+hold on;
+plot(t, ddq_0(1, :), 'b--', 'DisplayName', 'Initial Traj');
+plot(t, ddq_star(1, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+legend('Location','Best');
+xlabel('time [s]');
+ylabel('joint acceleration [rad / s^2]');
+title({'Comparison of 1^{st} joint accelerations'});
+grid;
+
+subplot(3, 1, 2)
+hold on;
+plot(t, ddq_0(2, :), 'b--', 'DisplayName', 'Initial Traj');
+plot(t, ddq_star(2, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+legend('Location','Best');
+xlabel('time [s]');
+ylabel('joint acceleration [rad / s^2]');
+title({'Comparison of 2^{nd} joint accelerations'});
+grid;
+
+subplot(3, 1, 3)
+hold on;
+plot(t, ddq_0(3, :), 'b--', 'DisplayName', 'Initial Traj');
+plot(t, ddq_star(3, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+legend('Location','Best');
+xlabel('time [s]');
+ylabel('joint acceleration [rad / s^2]');
+title({'Comparison of 3^{rd} joint accelerations'});
 grid;
 
 %% Calculate Torques for Initial Trajectories and Compare with Optimal Trajectories
@@ -187,15 +222,15 @@ plot(t, GAMMA_normalised_0(1, :), 'b--', 'DisplayName', 'Torques of Initial Traj
 plot(t, GAMMA_normalised_star(1, :), 'LineWidth', 2, 'DisplayName', 'Torques of Optimal Traj');
 legend('Location','Best');
 xlabel('time [s]');
-ylabel('joint torque [Nm]');
+ylabel('normalised joint torque [no units]');
 title({'Comparison of normalised squared joint torques'});
 grid;
 
-% Crude values of the costs
-J_0 = sum(GAMMA_normalised_0);
-J_star = sum(GAMMA_normalised_star);
+% Crude values of the torque cost function cost
+JT_0 = sum(GAMMA_normalised_0);
+JT_star = sum(GAMMA_normalised_star);
 
-barValues = [J_0 J_star];
+barValues = [JT_0 JT_star];
 numbars = length(barValues);
 barLocations = 1:numbars;
 figure;
@@ -205,8 +240,119 @@ barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
 barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
 xticks(barLocations);
 xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
-ylabel('Cost function value');
-title('Comparing cost function values');
+ylabel('Normalised Squared Torque Value');
+title('Comparing Normalised Squared Torque Values');
+
+%% Compare Square Joint Accelerations and Time
+
+% Get the squared joint acceleration of initial trajectory
+ddq_0_squared = sum(ddq_0.^2);
+
+% Get the squared joint acceleration of optimal trajectory
+ddq_star_squared = sum(ddq_star.^2);
+
+% Compare graphically
+figure;
+
+hold on;
+plot(t, ddq_0_squared(1, :), 'b--', 'DisplayName', 'Acceleration^2 of Initial Traj');
+plot(t, ddq_star_squared(1, :), 'LineWidth', 2, 'DisplayName', 'Acceleration^2 of Optimal Traj');
+legend('Location','NorthEast');
+xlabel('time [s]');
+ylabel('joint acceleration squared [rad^2 / s^4]');
+title({'Comparison of squared joint accelerations'});
+grid;
+
+% Crude values of the accelerations cost function cost
+JA_0 = sum(ddq_0_squared);
+JA_star = sum(ddq_star_squared);
+
+barValues = [JA_0 JA_star];
+numbars = length(barValues);
+barLocations = 1:numbars;
+figure;
+hold on;
+barChart = bar(barLocations, barValues);
+barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
+barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
+xticks(barLocations);
+xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
+ylabel('Squared Joint Acceleration Value [rad^2 / s^4]');
+title('Comparing Squared Joint Acceleration Values');
+
+%% Compare Square Joint Jerks in Time and in Value
+
+% Get the squared joint jerks of initial trajectory
+dddq_0_squared = sum(dddq_0.^2);
+
+% Get the squared joint jerks of optimal trajectory
+dddq_star_squared = sum(dddq_star.^2);
+
+% Compare graphically
+figure;
+
+hold on;
+plot(t, dddq_0_squared(1, :), 'b--', 'DisplayName', 'Jerk^2 of Initial Traj');
+plot(t, dddq_star_squared(1, :), 'LineWidth', 2, 'DisplayName', 'Jerk^2 of Optimal Traj');
+legend('Location','NorthEast');
+xlabel('time [s]');
+ylabel('joint jerk squared [rad^2 / s^6]');
+title({'Comparison of squared joint jerks'});
+grid;
+
+% Crude values of the jerks cost function
+JJ_0 = sum(dddq_0_squared);
+JJ_star = sum(dddq_star_squared);
+
+barValues = [JJ_0 JJ_star];
+numbars = length(barValues);
+barLocations = 1:numbars;
+figure;
+hold on;
+barChart = bar(barLocations, barValues);
+barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
+barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
+xticks(barLocations);
+xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
+ylabel('Squared Joint Jerk Value [rad^2 / s^6]');
+title('Comparing Squared Joint Jerk Values');
+
+%% Compare Square Joint Powers in Time and in Value
+
+% Get the squared joint powers of initial trajectory
+POW_0_squared = sum((dq_0 .* GAMMA_0).^2);
+
+% Get the squared joint powers of optimal trajectory
+POW_star_squared = sum((dq_star .* GAMMA_star).^2);
+
+% Compare graphically
+figure;
+
+hold on;
+plot(t, POW_0_squared(1, :), 'b--', 'DisplayName', 'Power^2 of Initial Traj');
+plot(t, POW_star_squared(1, :), 'LineWidth', 2, 'DisplayName', 'Power^2 of Optimal Traj');
+legend('Location','NorthEast');
+xlabel('time [s]');
+ylabel('joint power squared [W^2]');
+title({'Comparison of squared joint powers'});
+grid;
+
+% Crude values of the torque cost function cost
+JP_0 = sum(POW_0_squared);
+JP_star = sum(POW_star_squared);
+
+barValues = [JP_0 JP_star];
+numbars = length(barValues);
+barLocations = 1:numbars;
+figure;
+hold on;
+barChart = bar(barLocations, barValues);
+barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
+barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
+xticks(barLocations);
+xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
+ylabel('Squared Joint Power Value [W^2]');
+title('Comparing Squared Joint Power Values');
 
 %% Plotting of COP
 

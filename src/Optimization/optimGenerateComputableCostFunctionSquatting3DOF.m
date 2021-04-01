@@ -1,12 +1,18 @@
-function optimGenerateComputableCostFunctionsSquatting3DOF(itpParam,optTolerance,modelParam)
+function optimGenerateComputableCostFunctionsSquatting3DOF(itpParam,optParam,modelParam)
 %OPTIMGENERATECOMPUTABLECOSTFUNCTIONSSQUATTING3DOF generates a computable 
-%cost function for the squatting optimization.
+%compound cost function for the squatting optimization consisting of a
+%linear combination of multiple cost functions.
+
+%. It also 
 
 % Create symbolic variables
 x_cas = casadi.SX.sym('x_cas', 1, 3*itpParam.NumControlPoints);
 
-% Compute cost
-J = optimCostFunctionSquatting3DOF(x_cas, itpParam, optTolerance, modelParam);
+% Compute cost functions, and get back a vector
+J = optimCostFunctionSquatting3DOF(x_cas, itpParam, optParam, modelParam);
+
+% Compute linear combination of cost functions
+% J = sum(J .* optParam.CostFunctionWeights);
 
 % Compute gradient
 jacJ = jacobian(J, x_cas);

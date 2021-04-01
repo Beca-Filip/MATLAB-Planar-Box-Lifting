@@ -1,4 +1,4 @@
-function [C, Ceq] = optimConstraintFunctionSquatting3DOF(x,itpParam,optTolerance,modelParam)
+function [C, Ceq] = optimConstraintFunctionSquatting3DOF(x,itpParam,optParam,modelParam)
 %OPTIMCONSTRAINTFUNCTIONSQUATTING3DOF implements the constraints on a 3DOF
 %model of a human performing a squat.
 
@@ -96,16 +96,16 @@ XCOP_low  = modelParam.ToePosition(1, 1);
 %% Inequality constraints
 
 C = [
-    optTolerance.MulCrunchConditions * (nhc - modelParam.CrunchNeckHeightPercentage * sum(L));
-    optTolerance.MulCrunchConditions * (hhc - modelParam.CrunchHipHeightPercentage * sum(L(1:end-1)));
-    optTolerance.MulCOPConditions * (XCOP - XCOP_high)';
-    optTolerance.MulCOPConditions * (-XCOP + XCOP_low)';
-    optTolerance.MulTorqueLimits * (GAMMA(1, :)' - modelParam.TorqueLimits(1));
-    optTolerance.MulTorqueLimits * (-GAMMA(1, :)' - modelParam.TorqueLimits(1));
-    optTolerance.MulTorqueLimits * (GAMMA(2, :)' - modelParam.TorqueLimits(2));
-    optTolerance.MulTorqueLimits * (-GAMMA(2, :)' - modelParam.TorqueLimits(2));
-    optTolerance.MulTorqueLimits * (GAMMA(3, :)' - modelParam.TorqueLimits(3));
-    optTolerance.MulTorqueLimits * (-GAMMA(3, :)' - modelParam.TorqueLimits(3));
+    optParam.MulCrunchConditions * (nhc - modelParam.CrunchNeckHeightPercentage * sum(L));
+    optParam.MulCrunchConditions * (hhc - modelParam.CrunchHipHeightPercentage * sum(L(1:end-1)));
+    optParam.MulCOPConditions * (XCOP - XCOP_high)';
+    optParam.MulCOPConditions * (-XCOP + XCOP_low)';
+    optParam.MulTorqueLimits * (GAMMA(1, :)' - modelParam.TorqueLimits(1));
+    optParam.MulTorqueLimits * (-GAMMA(1, :)' - modelParam.TorqueLimits(1));
+    optParam.MulTorqueLimits * (GAMMA(2, :)' - modelParam.TorqueLimits(2));
+    optParam.MulTorqueLimits * (-GAMMA(2, :)' - modelParam.TorqueLimits(2));
+    optParam.MulTorqueLimits * (GAMMA(3, :)' - modelParam.TorqueLimits(3));
+    optParam.MulTorqueLimits * (-GAMMA(3, :)' - modelParam.TorqueLimits(3));
     ];
 
 %% Equality constraints

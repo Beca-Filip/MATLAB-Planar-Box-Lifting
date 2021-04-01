@@ -1,4 +1,4 @@
-function optimGenerateComputableConstraintFunctionsSquatting3DOF(itpParam,optTolerance,modelParam)
+function optimGenerateComputableConstraintFunctionsSquatting3DOF(itpParam,optParam,modelParam)
 %OPTIMGENERATECOMPUTABLECONSTRAINTFUNCTIONSSQUATTING3DOF generates
 %computable constraints for the squatting optimization.
 
@@ -6,7 +6,7 @@ function optimGenerateComputableConstraintFunctionsSquatting3DOF(itpParam,optTol
 x_cas = casadi.SX.sym('x_cas', 1, 3*itpParam.NumControlPoints);
 
 % Compute constraints
-[C, Ceq] = optimConstraintFunctionSquatting3DOF(x_cas, itpParam, optTolerance, modelParam);
+[C, Ceq] = optimConstraintFunctionSquatting3DOF(x_cas, itpParam, optParam, modelParam);
 
 % Compute gradients
 jacC = jacobian(C, x_cas)';

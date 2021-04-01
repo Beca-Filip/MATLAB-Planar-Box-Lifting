@@ -1,4 +1,4 @@
-function [A, b, Aeq, beq] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optTolerance, modelParam)
+function [A, b, Aeq, beq] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam)
 %GENERATELINEARCONSTRAINTMATRICES generates the matrices of linear
 %equalities and inequalities required by the squat optimization.
 
@@ -25,9 +25,12 @@ q3_knot_cas = x_cas(2*n + 1 : 3*n);
 % h(x) = Aeq*x - beq
 
 eqCon = [
-        optTolerance.MulInitialConditions * (q1_knot_cas(1) - modelParam.InitialAngles(1));
-        optTolerance.MulInitialConditions * (q2_knot_cas(1) - modelParam.InitialAngles(2));
-        optTolerance.MulInitialConditions * (q3_knot_cas(1) - modelParam.InitialAngles(3));
+        optParam.MulInitialConditions * (q1_knot_cas(1) - modelParam.InitialAngles(1));
+        optParam.MulInitialConditions * (q2_knot_cas(1) - modelParam.InitialAngles(2));
+        optParam.MulInitialConditions * (q3_knot_cas(1) - modelParam.InitialAngles(3));
+        optParam.MulFinalConditions * (q1_knot_cas(end) - modelParam.FinalAngles(1));
+        optParam.MulFinalConditions * (q2_knot_cas(end) - modelParam.FinalAngles(2));
+        optParam.MulFinalConditions * (q3_knot_cas(end) - modelParam.FinalAngles(3));
         ];
 
 % Get the jacobian

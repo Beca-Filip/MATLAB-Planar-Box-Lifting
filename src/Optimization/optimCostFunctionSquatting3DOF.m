@@ -52,7 +52,7 @@ ZEW = zeroExternalWrenches3DOF(itpParam.ItpResolutionCost);
 JT = sum(sum(GAMMA.^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
 
 % #Add to cost function vector
-% J = [J JT];
+J = [J JT];
 
 %% Intermediate Computations: Joint Acceleration
 
@@ -60,7 +60,7 @@ JT = sum(sum(GAMMA.^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolu
 JA = sum(sum(ddq.^2)) / itpParam.ItpResolutionCost / 3;
 
 % #Add to cost function vector
-% J = [J JA];
+J = [J JA];
 
 %% Intermediate Computations: Joint Jerk
 
@@ -73,7 +73,7 @@ JJ = sum(sum(dddq.^2)) / itpParam.ItpResolutionCost / 3;
 %% Intermediate Computations: Joint Power
 
 % Get Joint Power cost function
-JP = sum(sum((dq .* GAMMA).^2, 2) ./ (modelParam.TorqueLimits.^2)');
+JP = sum(sum((dq .* GAMMA).^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
 
 % #Add to cost function vector
 J = [J JP];
@@ -82,6 +82,5 @@ J = [J JP];
 
 % Cost Function
 % J = J;
-
 end
 

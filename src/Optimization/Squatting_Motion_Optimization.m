@@ -51,7 +51,7 @@ Ts = (tf - t0) / (N-1);
 
 % Create a structure containing interpolation parameters
 % Number of knots (Must be an odd number because of the way we form the initial solution)
-itpParam.NumControlPoints = 11;
+itpParam.NumControlPoints = 15;
 
 % Spline Knot Indices
 itpParam.KnotIndices = floor(linspace(1, N, itpParam.NumControlPoints));
@@ -123,9 +123,26 @@ optParam.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
 
 %% Cost Function Parametrization:
 
-% Get the parametrization
-optParam.CostFunctionWeights = [1 0 0 0];
+% Parametrization of the compound cost function
+% If variable outsideWeights is defined, use those weights
+if exist("outsideWeights")
+    optParam.CostFunctionWeights = outsideWeights;
+else
+%     optParam.CostFunctionWeights = [0.25 0.25 0.25 0.25];
+    optParam.CostFunctionWeights = [0 0 1];
+%     optParam.CostFunctionWeights = zeros(1, 3);
+%     optParam.CostFunctionWeights = [.25 .4 .35];
+end
 
+% Get the normalization ( Minima and Maxima, to be able to have CF's of the
+% same order of magnitude ) See: Xiang, 2010
+% These are set to constants but a script will be written to determine them
+% automatically
+load("Feasibility_Initial_15.mat");   % Loads feasible x0
+load("premilinary.mat");        % Loads minima and maxima
+optParam.CostFunctionMinima = CostFunctionMinima([1 2 4]);
+% optParam.CostFunctionMaxima = optimCostFunctionSquatting3DOF(x0, itpParam, optParam, modelParam);
+optParam.CostFunctionMaxima = CostFunctionMaxima([1 2 4]);
 %% Optimization pipeline
 
 % Generate linear constraint matrices
@@ -145,7 +162,22 @@ optimGenerateComputableCostFunctionSquatting3DOF(itpParam, optParam, modelParam)
 warning('on', 'all');
 
 % Optimization options
-op = optimoptions('fmincon',...
+% With gradient check
+% op = optimoptions('fmincon',...   
+%                   'Algorithm', 'sqp',...
+%                   'Display', 'Iter', ...
+%                   'MaxIter', 1e4, ...
+%                   'MaxFunctionEvaluations', 2e5, ...
+%                   'SpecifyObjectiveGradient', true, ...
+%                   'SpecifyConstraintGradient', true,...
+%                   'TolFun', 1e-3, ...
+%                   'CheckGradients', true, ...
+%                   'FiniteDifferenceType', 'Central', ...
+%                   'FiniteDifferenceStepSize', 8e-5, ...
+%                   'UseParallel', 'Always' ...
+%                   );
+% Without gradientcheck
+op = optimoptions('fmincon',... 
                   'Algorithm', 'sqp',...
                   'Display', 'Iter', ...
                   'MaxIter', 1e4, ...
@@ -153,24 +185,28 @@ op = optimoptions('fmincon',...
                   'SpecifyObjectiveGradient', true, ...
                   'SpecifyConstraintGradient', true,...
                   'TolFun', 1e-3, ...
-                  'CheckGradients', true, ...
-                  'FiniteDifferenceType', 'Central', ...
-                  'FiniteDifferenceStepSize', 8e-5, ...
                   'UseParallel', 'Always' ...
                   );
-              
+
 % Initial solution ( Linearly spaced knots to bottom position followed by 
 % linearly spaced knots to standing position )
-q1_knot_0 = [linspace(q0(1), qf(1), (itpParam.NumControlPoints + 1) / 2),...
-             linspace(qf(1), q0(1), (itpParam.NumControlPoints + 1) / 2)];
-q1_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
-q2_knot_0 = [linspace(q0(2), qf(2), (itpParam.NumControlPoints + 1) / 2),...
-             linspace(qf(2), q0(2), (itpParam.NumControlPoints + 1) / 2)];
-q2_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
-q3_knot_0 = [linspace(q0(3), qf(3), (itpParam.NumControlPoints + 1) / 2),...
-             linspace(qf(3), q0(3), (itpParam.NumControlPoints + 1) / 2)];
-q3_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
-x0 = [q1_knot_0, q2_knot_0, q3_knot_0];
+% q1_knot_0 = [linspace(q0(1), qf(1), (itpParam.NumControlPoints + 1) / 2),...
+%              linspace(qf(1), q0(1), (itpParam.NumControlPoints + 1) / 2)];
+% q1_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
+% q2_knot_0 = [linspace(q0(2), qf(2), (itpParam.NumControlPoints + 1) / 2),...
+%              linspace(qf(2), q0(2), (itpParam.NumControlPoints + 1) / 2)];
+% q2_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
+% q3_knot_0 = [linspace(q0(3), qf(3), (itpParam.NumControlPoints + 1) / 2),...
+%              linspace(qf(3), q0(3), (itpParam.NumControlPoints + 1) / 2)];
+% q3_knot_0((itpParam.NumControlPoints + 1) / 2) = [];    % Remove doubled knot
+% x0 = [q1_knot_0, q2_knot_0, q3_knot_0];
+%
+% This solution is infeasible because of COP constraints. Getting a
+% feasible solution is as easy as starting with that one and minimizing a
+% constant cost function (e.g. setting all cost function weights to 0).
+% That has been done and this solution will be loaded.
+% load("Feasible_Initial.mat");   % Loads feasible x0
+load("Feasibility_Initial_15.mat");   % Loads feasible x0
 
 % Evaluate initial solution
 [J0, ~] = costFun(x0);
@@ -256,3 +292,6 @@ opts.legendParameters = {"Location", "SouthWest"};
 %% Artificial squatting motion
 
 Animate_3DOF(q_star, L, Ts, opts);
+
+%% Save the optimization data
+save('Data_Optimization.mat', 'x_star', 'f_star', 'itpParam', 'optParam', 'modelParam');

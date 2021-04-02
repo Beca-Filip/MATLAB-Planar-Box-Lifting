@@ -5,30 +5,33 @@ figure;
 
 subplot(3, 1, 1)
 hold on;
-plot(itpParam.KnotValues, q1_knot_0, 'DisplayName', 'InitialPoints q_1');
+plot(itpParam.KnotValues, q1_knot_0, 'HandleVisibility', 'Off');
+plot(t(itpParam.KnotIndices), q1_knot_0, 'bo', 'DisplayName', 'InitialPoints q_1');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(1, 1)*two1, 'DisplayName', 'Lower bound');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(2, 1)*two1, 'DisplayName', 'Upper bound');
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint angle [rad]');
 title({'1^{st} third of Optimization Variables'; 'Joint 1 Control Points'});
 
 subplot(3, 1, 2)
 hold on;
-plot(itpParam.KnotValues, q2_knot_0, 'DisplayName', 'InitialPoints q_2');
+plot(itpParam.KnotValues, q2_knot_0, 'HandleVisibility', 'Off');
+plot(t(itpParam.KnotIndices), q2_knot_0, 'bo', 'DisplayName', 'InitialPoints q_2');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(1, 2)*two1, 'DisplayName', 'Lower bound');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(2, 2)*two1, 'DisplayName', 'Upper bound');
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint angle [rad]');
 title({'2^{nd} third of Optimization Variables'; 'Joint 2 Control Points'});
 
 subplot(3, 1, 3)
 hold on;
-plot(itpParam.KnotValues, q3_knot_0, 'DisplayName', 'InitialPoints q_3');
+plot(itpParam.KnotValues, q3_knot_0, 'HandleVisibility', 'Off');
+plot(t(itpParam.KnotIndices), q3_knot_0, 'bo', 'DisplayName', 'InitialPoints q_3');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(1, 3)*two1, 'DisplayName', 'Lower bound');
 plot(itpParam.KnotValues([1, end]), modelParam.JointLimits(2, 3)*two1, 'DisplayName', 'Upper bound');
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint angle [rad]');
 title({'3^{rd} third of Optimization Variables'; 'Joint 3 Control Points'});
@@ -77,10 +80,12 @@ figure;
 subplot(3, 1, 1)
 hold on;
 plot(t, q_0(1, :), 'b--', 'DisplayName', 'Initial Traj');
-plot(t, q_star(1, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+% plot(t(itpParam.KnotIndices), q1_knot_0, 'bo', 'HandleVisibility', 'Off');
+plot(t, q_star(1, :), 'r', 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+% plot(t(itpParam.KnotIndices), q1_knot_star, 'ro', 'HandleVisibility', 'Off');
 plot(t([1 end]), modelParam.JointLimits(1, 1)*two1, 'k--', 'DisplayName', 'Lower bound');
 plot(t([1 end]), modelParam.JointLimits(2, 1)*two1, 'k--', 'DisplayName', 'Upper bound');
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint angle [rad]');
 title({'Comparison of 1^{st} joint trajectories'});
@@ -89,10 +94,12 @@ grid;
 subplot(3, 1, 2)
 hold on;
 plot(t, q_0(2, :), 'b--', 'DisplayName', 'Initial Traj');
-plot(t, q_star(2, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+% plot(t(itpParam.KnotIndices), q2_knot_0, 'bo', 'HandleVisibility', 'Off');
+plot(t, q_star(2, :), 'r', 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+% plot(t(itpParam.KnotIndices), q2_knot_star, 'ro', 'HandleVisibility', 'Off');
 plot(t([1 end]), modelParam.JointLimits(1, 2)*two1, 'k--', 'DisplayName', 'Lower bound');
 plot(t([1 end]), modelParam.JointLimits(2, 2)*two1, 'k--', 'DisplayName', 'Upper bound');
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint angle [rad]');
 title({'Comparison of 2^{nd} joint trajectories'});
@@ -101,48 +108,23 @@ grid;
 subplot(3, 1, 3)
 hold on;
 plot(t, q_0(3, :), 'b--', 'DisplayName', 'Initial Traj');
-plot(t, q_star(3, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+% plot(t(itpParam.KnotIndices), q3_knot_0, 'bo', 'HandleVisibility', 'Off');
+plot(t, q_star(3, :), 'r', 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+% plot(t(itpParam.KnotIndices), q3_knot_star, 'ro', 'HandleVisibility', 'Off');
 plot(t([1 end]), modelParam.JointLimits(1, 3)*two1, 'k--', 'DisplayName', 'Lower bound');
 plot(t([1 end]), modelParam.JointLimits(2, 3)*two1, 'k--', 'DisplayName', 'Upper bound');
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint angle [rad]');
 title({'Comparison of 3^{rd} joint trajectories'});
 grid;
 
-%% Compare Initial Joint Accelerations with Optimal Joint Accelerations
+%% Initialize Overall Cost Function Vector
 
-figure;
+% Overall cost function vectors for initial and optimal trajectory
+JOverall_0 = [];
+JOverall_star = [];
 
-subplot(3, 1, 1)
-hold on;
-plot(t, ddq_0(1, :), 'b--', 'DisplayName', 'Initial Traj');
-plot(t, ddq_star(1, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
-legend('Location','Best');
-xlabel('time [s]');
-ylabel('joint acceleration [rad / s^2]');
-title({'Comparison of 1^{st} joint accelerations'});
-grid;
-
-subplot(3, 1, 2)
-hold on;
-plot(t, ddq_0(2, :), 'b--', 'DisplayName', 'Initial Traj');
-plot(t, ddq_star(2, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
-legend('Location','Best');
-xlabel('time [s]');
-ylabel('joint acceleration [rad / s^2]');
-title({'Comparison of 2^{nd} joint accelerations'});
-grid;
-
-subplot(3, 1, 3)
-hold on;
-plot(t, ddq_0(3, :), 'b--', 'DisplayName', 'Initial Traj');
-plot(t, ddq_star(3, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
-legend('Location','Best');
-xlabel('time [s]');
-ylabel('joint acceleration [rad / s^2]');
-title({'Comparison of 3^{rd} joint accelerations'});
-grid;
 
 %% Calculate Torques for Initial Trajectories and Compare with Optimal Trajectories
 
@@ -169,7 +151,7 @@ if plotTorqueLimits
     plot(t([1 end]), -modelParam.TorqueLimits(1, 1)*two1, 'k--', 'DisplayName', 'Lower bound');
     plot(t([1 end]), modelParam.TorqueLimits(1, 1)*two1, 'k--', 'DisplayName', 'Upper bound');
 end
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint torque [Nm]');
 title({'Comparison of 1^{st} joint torques'});
@@ -183,7 +165,7 @@ if plotTorqueLimits
     plot(t([1 end]), -modelParam.TorqueLimits(1, 2)*two1, 'k--', 'DisplayName', 'Lower bound');
     plot(t([1 end]), modelParam.TorqueLimits(1, 2)*two1, 'k--', 'DisplayName', 'Upper bound');
 end
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint torque [Nm]');
 title({'Comparison of 2^{nd} joint torques'});
@@ -197,7 +179,7 @@ if plotTorqueLimits
     plot(t([1 end]), -modelParam.TorqueLimits(1, 3)*two1, 'k--', 'DisplayName', 'Lower bound');
     plot(t([1 end]), modelParam.TorqueLimits(1, 3)*two1, 'k--', 'DisplayName', 'Upper bound');
 end
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('joint torque [Nm]');
 title({'Comparison of 3^{rd} joint torques'});
@@ -220,7 +202,7 @@ figure;
 hold on;
 plot(t, GAMMA_normalised_0(1, :), 'b--', 'DisplayName', 'Torques of Initial Traj');
 plot(t, GAMMA_normalised_star(1, :), 'LineWidth', 2, 'DisplayName', 'Torques of Optimal Traj');
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('normalised joint torque [no units]');
 title({'Comparison of normalised squared joint torques'});
@@ -243,13 +225,51 @@ xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
 ylabel('Normalised Squared Torque Value');
 title('Comparing Normalised Squared Torque Values');
 
+% Add crude values to the overall cost functions
+JOverall_0 = [JOverall_0 JT_0];
+JOverall_star = [JOverall_star JT_star];
+
+%% Compare Initial Joint Accelerations with Optimal Joint Accelerations
+
+figure;
+
+subplot(3, 1, 1)
+hold on;
+plot(t, ddq_0(1, :), 'b--', 'DisplayName', 'Initial Traj');
+plot(t, ddq_star(1, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+legend('Location','NorthEast');
+xlabel('time [s]');
+ylabel('joint acceleration [rad / s^2]');
+title({'Comparison of 1^{st} joint accelerations'});
+grid;
+
+subplot(3, 1, 2)
+hold on;
+plot(t, ddq_0(2, :), 'b--', 'DisplayName', 'Initial Traj');
+plot(t, ddq_star(2, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+legend('Location','NorthEast');
+xlabel('time [s]');
+ylabel('joint acceleration [rad / s^2]');
+title({'Comparison of 2^{nd} joint accelerations'});
+grid;
+
+subplot(3, 1, 3)
+hold on;
+plot(t, ddq_0(3, :), 'b--', 'DisplayName', 'Initial Traj');
+plot(t, ddq_star(3, :), 'LineWidth', 2, 'DisplayName', 'Optimal Traj');
+legend('Location','NorthEast');
+xlabel('time [s]');
+ylabel('joint acceleration [rad / s^2]');
+title({'Comparison of 3^{rd} joint accelerations'});
+grid;
+
 %% Compare Square Joint Accelerations and Time
 
 % Get the squared joint acceleration of initial trajectory
-ddq_0_squared = sum(ddq_0.^2);
+ddq_0_squared = sum(ddq_0.^2) / itpParam.ItpResolutionCost / 3;
 
 % Get the squared joint acceleration of optimal trajectory
-ddq_star_squared = sum(ddq_star.^2);
+ddq_star_squared = sum(ddq_star.^2) / itpParam.ItpResolutionCost / 3;
 
 % Compare graphically
 figure;
@@ -280,13 +300,17 @@ xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
 ylabel('Squared Joint Acceleration Value [rad^2 / s^4]');
 title('Comparing Squared Joint Acceleration Values');
 
+% Add crude values to the overall cost functions
+JOverall_0 = [JOverall_0 JA_0];
+JOverall_star = [JOverall_star JA_star];
+
 %% Compare Square Joint Jerks in Time and in Value
 
 % Get the squared joint jerks of initial trajectory
-dddq_0_squared = sum(dddq_0.^2);
+dddq_0_squared = sum(dddq_0.^2) / itpParam.ItpResolutionCost / 3;
 
 % Get the squared joint jerks of optimal trajectory
-dddq_star_squared = sum(dddq_star.^2);
+dddq_star_squared = sum(dddq_star.^2) / itpParam.ItpResolutionCost / 3;
 
 % Compare graphically
 figure;
@@ -317,13 +341,17 @@ xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
 ylabel('Squared Joint Jerk Value [rad^2 / s^6]');
 title('Comparing Squared Joint Jerk Values');
 
+% Add crude values to the overall cost functions
+% JOverall_0 = [JOverall_0 JJ_0];
+% JOverall_star = [JOverall_star JJ_star];
+
 %% Compare Square Joint Powers in Time and in Value
 
 % Get the squared joint powers of initial trajectory
-POW_0_squared = sum((dq_0 .* GAMMA_0).^2);
+POW_0_squared = sum((dq_0 .* GAMMA_0).^2 ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
 
 % Get the squared joint powers of optimal trajectory
-POW_star_squared = sum((dq_star .* GAMMA_star).^2);
+POW_star_squared = sum((dq_star .* GAMMA_star).^2 ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
 
 % Compare graphically
 figure;
@@ -354,6 +382,36 @@ xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
 ylabel('Squared Joint Power Value [W^2]');
 title('Comparing Squared Joint Power Values');
 
+% Add crude values to the overall cost functions
+JOverall_0 = [JOverall_0 JP_0];
+JOverall_star = [JOverall_star JP_star];
+
+%% Comparing Overall Cost Function
+
+% Normalize the cost function
+CostFunctionMinima = optParam.CostFunctionMinima;
+CostFunctionMaxima = optParam.CostFunctionMaxima;
+JOverall_0 = (JOverall_0 - CostFunctionMinima) ./ (CostFunctionMaxima - CostFunctionMinima);
+JOverall_star = (JOverall_star - CostFunctionMinima) ./ (CostFunctionMaxima - CostFunctionMinima);
+
+% Compute the weighed value of the overall cost function
+JOverall_0 = sum(JOverall_0 .* optParam.CostFunctionWeights);
+JOverall_star = sum(JOverall_star .* optParam.CostFunctionWeights);
+
+
+% Compare them graphically
+barValues = [JOverall_0 JOverall_star];
+numbars = length(barValues);
+barLocations = 1:numbars;
+figure;
+hold on;
+barChart = bar(barLocations, barValues);
+barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
+barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
+xticks(barLocations);
+xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
+ylabel('Overall Cost Function Value');
+title('Overall Cost Function Value');
 %% Plotting of COP
 
 % Flags
@@ -382,7 +440,7 @@ if plotCOPLimits
     plot(t([1 end]), XCOP_low*two1, 'k--', 'DisplayName', 'Lower bound');
     plot(t([1 end]), XCOP_high*two1, 'k--', 'DisplayName', 'Upper bound');
 end
-legend('Location','Best');
+legend('Location','NorthEast');
 xlabel('time [s]');
 ylabel('Center of pressure x position [m]');
 title({'Comparison of X-Coordinate of COP'});

@@ -16,7 +16,7 @@ J = optimCostFunctionSquatting3DOF(x_cas, itpParam, optParam, modelParam);
 J = (J - optParam.CostFunctionMinima) ./ (optParam.CostFunctionMaxima - optParam.CostFunctionMinima);
 
 % Get cost functions' gradients
-jacJ = jacobian(J, x_cas);
+jacJ = jacobian(J, x_cas)';
 
 % Create a casadi computable function
 costFunctionSet = casadi.Function('costFunctionSet', {x_cas}, {J, jacJ}, {'Control Points'}, {'J', 'dJ'});
@@ -26,7 +26,7 @@ costFunctionSet = casadi.Function('costFunctionSet', {x_cas}, {J, jacJ}, {'Contr
 compoundCostFunction = sum(J .* optParam.CostFunctionWeights);
 
 % Compute gradient
-jacCompoundCostFunction = jacobian(compoundCostFunction, x_cas);
+jacCompoundCostFunction = jacobian(compoundCostFunction, x_cas)';
 
 % Create casadi computable function
 costFun = casadi.Function('costFun', {x_cas}, {compoundCostFunction, jacCompoundCostFunction}, {'Control Points'}, {'J', 'dJ'});

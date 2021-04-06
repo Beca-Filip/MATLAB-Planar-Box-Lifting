@@ -31,25 +31,52 @@ addpath('optimSquattingComputables\');
 % Load optimal data
 load Data_Optimization.mat
 
-%% Get the cost function and constraint gradient matrices in the right form for KKT IO
+%% Get the cost function and constraint gradient matrices
 
 % Get the cost function and its gradient
 [J_star, dJ_star] = fullify(@(x)costFunctionSet(x), x_star);
 
-% Get the constraint functions and its gradients
+% Get the nonlinear constraint functions and its gradients
 [C_star, Ceq_star, dC_star, dCeq_star] = fullify(@(x)nonlinearConstr, x_star);
+
+% Get the linear constraint matrices
+[A_star, b_star, Aeq_star, beq_tar] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
+
+%% Preprocess gradient matrices to prepare them for IOC
 
 % Reshape all gradient matrices such that their number of rows equals the
 % number of rows of the optimization variable
+% Gradient of cost function
 if size(dJ_star, 1) ~= length(x_star)
     dJ_star = dJ_star';
 end
+% Gradient of nonlinear inequality constraints
 if size(dC_star, 1) ~= length(x_star)
     dC_star = dC_star';
 end
+% Gradient of nonlinear equality constraints
 if size(dCeq_star, 1) ~= length(x_star)
     dCeq_star = dCeq_star';
 end
+% Gradient of linear inequality constraints
+if size(A_star, 1) ~= length(x_star)
+    A_star = A_star';
+end
+% Gradient of linear equality constraints
+if size(Aeq_star, 1) ~= length(x_star)
+    Aeq_star = Aeq_star';
+end
+
+% Append nonlinear and linear inequality gradients into a single matrix
+dIneq = [A_star, dC_star];
+
+% Append nonlinear and linear equality gradients into a single matrix
+dEq = [Aeq_star, dCeq_star];
+
+% Append nonlinear and linear inequality values into a single vector but
+% first reshape them into row vectors
+rshpIneqLin = reshape(x_star * reshape(A_star, length(x_star), []) - reshape(b_star, 1, []), 1, []);
+Ineq = [rshpIneqLin, reshape(C_star, 1, [])];
 
 % Get the different constants of interest
 
@@ -58,18 +85,18 @@ n = length(x_star);
 % Number of cost functions
 Ncf = size(dJ_star, 2);
 % Number of equality constraints
-m = size(dCeq_star, 2);
+m = size(dEq, 2);
 % Number of inequality constraints
-p = size(dC_star, 2);
+p = size(dIneq, 2);
 
 %% Formulate the IOC problem as a constraint least-squares problem
 % Notation from the MATLAB lsqlin documentation will be adopted
 
 % Get Stationarity matrix
-M_stat = [dJ_star, dCeq_star, dC_star];
+M_stat = [dJ_star, dEq, dIneq];
 
 % Get Complementarity matrix
-M_compl = [zeros(p, Ncf), zeros(p, m), diag(C_star)];
+M_compl = [zeros(p, Ncf), zeros(p, m), diag(Ineq)];
 
 % Get Multiplicative matrix
 C = [M_stat; M_compl];

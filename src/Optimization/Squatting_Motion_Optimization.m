@@ -209,8 +209,8 @@ op = optimoptions('fmincon',...
 load("Feasibility_Initial_15.mat");   % Loads feasible x0
 
 % Evaluate initial solution
-[J0, ~] = costFun(x0);
-[C0, Ceq0, ~, ~] = nonlinearConstr(x0);
+[J0, dJ0] = costFun(x0);
+[C0, Ceq0, dC0, dCeq0] = nonlinearConstr(x0);
 
 % Print evaluations
 fprintf("The inital function value is: %.4f .\n", J0);
@@ -219,7 +219,6 @@ if all(C0 < op.ConstraintTolerance) && all(abs(Ceq0) < op.ConstraintTolerance)
 else
     fprintf("The initial solution is infeasible.\n");
 end
-
 
 % Lower and upper boundss
 One = ones(1, itpParam.NumControlPoints);
@@ -294,4 +293,4 @@ opts.legendParameters = {"Location", "SouthWest"};
 Animate_3DOF(q_star, L, Ts, opts);
 
 %% Save the optimization data
-save('Data_Optimization.mat', 'x_star', 'f_star', 'itpParam', 'optParam', 'modelParam');
+% save('Data_Optimization.mat', 'x_star', 'f_star', 'itpParam', 'optParam', 'modelParam');

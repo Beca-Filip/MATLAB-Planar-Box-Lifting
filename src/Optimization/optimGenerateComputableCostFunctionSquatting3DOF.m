@@ -12,9 +12,6 @@ x_cas = casadi.SX.sym('x_cas', 1, 3*itpParam.NumControlPoints);
 % Compute cost functions, and get back a vector
 J = optimCostFunctionSquatting3DOF(x_cas, itpParam, modelParam);
 
-% Normalise cost functions
-J = (J - optParam.CostFunctionMinima) ./ (optParam.CostFunctionMaxima - optParam.CostFunctionMinima);
-
 % Compute linear combination of cost functions
 compoundCostFunction = sum(J .* optParam.CostFunctionWeights);
 

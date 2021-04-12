@@ -29,7 +29,7 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load Data_Optimization.mat
+load ../../data/3DOF/Optimization-Human/Storage_Feasible_50_ConstraintPoints.mat
 
 %% Get the cost function and constraint gradient matrices
 

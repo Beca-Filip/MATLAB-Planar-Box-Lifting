@@ -29,9 +29,15 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load ../../data/3DOF/Optimization-Human/Storage_Feasible_50_ConstraintPoints.mat
+load ../../data/3DOF/Optimization-Human/Storage_MinimumTorque_50_ConstraintPoints.mat
 
 %% Get the cost function and constraint gradient matrices
+
+% Extract optimal solution
+itpParam = Storage.itpParam;
+optParam = Storage.optParam;
+modelParam = Storage.modelParam;
+x_star = Storage.Results.x_star;
 
 % Get the cost function and its gradient
 [J_star, dJ_star] = fullify(@(x)costFunctionSet(x), x_star);

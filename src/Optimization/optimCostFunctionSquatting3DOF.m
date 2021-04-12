@@ -1,4 +1,4 @@
-function [J] = optimCostFunctionSquatting3DOF(x,itpParam,optParam,modelParam)
+function [J] = optimCostFunctionSquatting3DOF(x,itpParam,modelParam)
 %OPTIMCOSTFUNCTIONSQUATTING3DOF implements the desired cost function of a 
 %3DOF model of a human performing a squat.
 

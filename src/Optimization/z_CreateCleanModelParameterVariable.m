@@ -41,8 +41,8 @@ modelParam.Gravity=-9.81;
 modelParam.TorqueLimits=param.taumax;
 modelParam.JointLimits=[...
     [pi/2; 3*pi/4],...
-    [-5*pi/6; 0.1],...
-    [-0.1; 2*pi/3] ...
+    [-5*pi/6; 0],...
+    [0; 2*pi/3] ...
     ];
 
 % Save new param variable
@@ -61,12 +61,12 @@ figure;
 subplot(3, 1, 1)
 hold on;
 histogram(Xtoe(:, 1)*1000);
-histogram(Xhee(:, 3)*1000);
+histogram(Xhee(:, 1)*1000);
 xlabel('X Toe Position [mm]');
 subplot(3, 1, 2)
 hold on;
 histogram(Xtoe(:, 2)*1000);
-histogram(Xhee(:, 3)*1000);
+histogram(Xhee(:, 2)*1000);
 xlabel('Y Toe Position [mm]');
 subplot(3, 1, 3)
 hold on;

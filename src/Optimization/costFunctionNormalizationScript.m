@@ -1,3 +1,4 @@
+clear all;
 %COSTFUNCTIONNORMALIZATIONSCRIPT is designed to find individual cost
 %function extrema to be able to perform normalization.
 

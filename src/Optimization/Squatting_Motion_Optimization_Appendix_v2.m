@@ -173,7 +173,8 @@ grid;
 JT_0 = sum(GAMMA_normalised_0);
 JT_star = sum(GAMMA_normalised_star);
 
-barValues = [JT_0 JT_star];
+% Normalised
+barValues = [JT_0 JT_star] ./ optParam.CostFunctionNormalisation(1);
 numbars = length(barValues);
 barLocations = 1:numbars;
 figure;
@@ -183,7 +184,7 @@ barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
 barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
 xticks(barLocations);
 xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
-ylabel('Normalised Squared Torque Value');
+ylabel('Normalised Squared Torque Value [No Units]');
 title('Comparing Normalised Squared Torque Values');
 
 % Add crude values to the overall cost functions
@@ -248,7 +249,8 @@ grid;
 JA_0 = sum(ddq_0_squared);
 JA_star = sum(ddq_star_squared);
 
-barValues = [JA_0 JA_star];
+% Normalise
+barValues = [JA_0 JA_star] ./ optParam.CostFunctionNormalisation(2);
 numbars = length(barValues);
 barLocations = 1:numbars;
 figure;
@@ -258,8 +260,8 @@ barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
 barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
 xticks(barLocations);
 xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
-ylabel('Squared Joint Acceleration Value [rad^2 / s^4]');
-title('Comparing Squared Joint Acceleration Values');
+ylabel('Normalised Squared Joint Acceleration Value [No Units]');
+title('Comparing Normalised Squared Joint Acceleration Values');
 
 % Add crude values to the overall cost functions
 JOverall_0 = [JOverall_0 JA_0];
@@ -330,7 +332,8 @@ grid;
 JP_0 = sum(POW_0_squared);
 JP_star = sum(POW_star_squared);
 
-barValues = [JP_0 JP_star];
+% Normalise
+barValues = [JP_0 JP_star] ./ optParam.CostFunctionNormalisation(3);
 numbars = length(barValues);
 barLocations = 1:numbars;
 figure;
@@ -340,7 +343,7 @@ barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
 barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
 xticks(barLocations);
 xticklabels({'Initial Trajectory', 'Optimal Trajectory'});
-ylabel('Squared Joint Power Value [W^2]');
+ylabel('Squared Joint Power Value [No Units]');
 title('Comparing Squared Joint Power Values');
 
 % Add crude values to the overall cost functions

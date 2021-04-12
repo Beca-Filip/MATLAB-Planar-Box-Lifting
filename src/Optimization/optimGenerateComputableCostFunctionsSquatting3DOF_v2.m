@@ -9,6 +9,9 @@ x_cas = casadi.SX.sym('x_cas', 1, 3*itpParam.NumControlPoints);
 % Compute cost functions, and get back a vector
 J = optimCostFunctionSquatting3DOF(x_cas, itpParam, modelParam);
 
+% Normalise cost functions
+J = J ./ optParam.CostFunctionNormalisation;
+
 % Get cost functions' gradients
 jacJ = jacobian(J, x_cas)';
 

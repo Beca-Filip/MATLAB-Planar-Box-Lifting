@@ -389,10 +389,8 @@ JOverall_star = [JOverall_star JP_star];
 %% Comparing Overall Cost Function
 
 % Normalize the cost function
-CostFunctionMinima = optParam.CostFunctionMinima;
-CostFunctionMaxima = optParam.CostFunctionMaxima;
-JOverall_0 = (JOverall_0 - CostFunctionMinima) ./ (CostFunctionMaxima - CostFunctionMinima);
-JOverall_star = (JOverall_star - CostFunctionMinima) ./ (CostFunctionMaxima - CostFunctionMinima);
+JOverall_0 = JOverall_0 ./ optParam.CostFunctionNormalisation;
+JOverall_star = JOverall_star ./ optParam.CostFunctionNormalisation;
 
 % Compute the weighed value of the overall cost function
 JOverall_0 = sum(JOverall_0 .* optParam.CostFunctionWeights);

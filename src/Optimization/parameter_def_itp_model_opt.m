@@ -1,3 +1,7 @@
+%PARAMETER_DEF_ITP_MODEL_OPT is a script to be used withing other scripts
+%(Squattiong_Motion_Optimization variants) it generates the parameters
+%related to the optimization contained in structures itpParam, modelParam
+%and optParam.
 %% Define time related parameters
 % Number of points
 N = size(Trial(simParam.TrialNumber).q, 2);

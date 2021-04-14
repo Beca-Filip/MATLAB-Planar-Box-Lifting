@@ -1,6 +1,6 @@
 function [A, b, Aeq, beq] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam)
-%GENERATELINEARCONSTRAINTMATRICES generates the matrices of linear
-%equalities and inequalities required by the squat optimization.
+%OPTIMGENERATELINEARCONSTRAINTMATRICESSQUATTING3DOF generates the matrices
+%of linear equalities and inequalities required by the squat optimization.
 
 %% Preprocessing
 % Exctract useful constants

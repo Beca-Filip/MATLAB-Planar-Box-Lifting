@@ -44,7 +44,7 @@ itpParam.BoundaryConditions = [
 ];
 
 % How many points to interpolate with in optimization constraints
-itpParam.ItpResolutionConstraints = 50;
+itpParam.ItpResolutionConstraints = simParam.NumConstraintPoints;
 
 % How many points to interpolate with in optimization cost calculation
 itpParam.ItpResolutionCost = N;

@@ -29,9 +29,15 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load Data_Optimization.mat
+load ../../data/3DOF/Optimization-Human/Storage_EqualWeights_50_ConstraintPoints.mat
 
 %% Get the cost function and constraint gradient matrices
+
+% Extract optimal solution
+itpParam = Storage.itpParam;
+optParam = Storage.optParam;
+modelParam = Storage.modelParam;
+x_star = Storage.Results.x_star;
 
 % Get the cost function and its gradient
 [J_star, dJ_star] = fullify(@(x)costFunctionSet(x), x_star);
@@ -200,7 +206,16 @@ legend;
 
 % Check for J_star
 [dJ_star_sub, ind_dJ_star] = licols(dJ_star, 1e-3);
-size(ind_dJ_star)
+% size(ind_dJ_star)
 % Check for matrix C
 [C_sub, ind_C] = licols(C, 1e-3);
-size(ind_C)
+% size(ind_C)
+% Print the residual norm
+fprintf("The residual norm of inverse optimization is %.4f.\n", rn_ioc);
+% Check rank of C
+fprintf("The size of the recovery matrix is [%d, %d] while its rank is %d.\n", size(C), rank(C));
+fprintf("The condition number of the recovery matrix is %.4f.\n", cond(C));
+% Check rank of part of C corresponding to the part of the recovery matrix
+% that is relative to the cost functions
+fprintf("The size of the cost function part of the recovery matrix is [%d, %d] while its rank is %d.\n", size(C(:, 1:Ncf)), rank(C(:, 1:Ncf)));
+fprintf("The condition number of the cost function part of the recovery matrix is %.4f.\n", cond(C(:, 1:Ncf)));

@@ -158,7 +158,7 @@ end
 
 end
 
-invA = A^(-1);
+invA = pinv(A);
 invA = invA(:, b);
 if c > 0
     coefficients = invA(:, 1:end-c) * y(:) + invA(:, end-c+1:end) * boundaryConditions(:, 3);

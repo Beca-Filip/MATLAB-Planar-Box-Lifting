@@ -36,7 +36,7 @@ load ../../data/3DOF/Segmentation/SegmentedTrials.mat
 
 % Should we generate all the simulation functions and gradients or can they
 % be loaded
-simParam.GenerateCostAndConstraints = false;
+simParam.GenerateCostAndConstraints = true;
 
 % Give a suffix for the saved data
 simParam.NumConstraintPoints=50;

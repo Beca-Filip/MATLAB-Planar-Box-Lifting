@@ -408,3 +408,106 @@ ylabel('Center of pressure x position [m]');
 title({'Comparison of X-Coordinate of COP'});
 grid;
 
+
+%% Plotting of inequality constraints altogether
+
+% Get the constraints
+[C_star, Ceq_star] = optimConstraintFunctionSquatting3DOF_v2(x_star, itpParam, modelParam);
+
+% Vector of number of constraints
+NCV = 1 : length(C_star);
+
+% Plot
+figure;
+subplot(2,2,[1 2])
+hold on;
+plot(NCV, C_star, 'DisplayName', 'Constraints');
+plot(NCV(C_star >= 0), C_star(C_star >= 0), 'ro', 'DisplayName', 'Active');
+plot(NCV, zeros(1, length(C_star)) + op.ConstraintTolerance, 'DisplayName', 'Tol');
+xlabel('k-th constraint');
+ylabel('constraint value');
+title('Nonlinear inequality constraints');
+legend;
+
+
+% Get the bounds
+lb_star = lb - x_star;
+ub_star = -ub + x_star;
+bnds_star = [lb_star, ub_star];
+
+% Vector number of bounds
+NBV = 1 : 2 * length(x_star);
+
+% Plot the bound-type constraint values
+subplot(2,2,3)
+hold on;
+plot(NBV, zeros(1, length(NBV)) + op.ConstraintTolerance, 'DisplayName', 'Tol');
+plot(NBV, bnds_star, 'DisplayName', 'Constraint Vals');
+plot(NBV(bnds_star >= 0), bnds_star(bnds_star >= 0), 'ro', 'DisplayName', 'Active bounds')
+xlabel('k-th bound');
+ylabel('constraint value');
+title('Bound-type inequality constraints');
+legend;
+
+% Vector of number of optimisation variables
+NVV = 1 : length(x_star);
+
+% Plot the optimisation variables and their bounds
+subplot(2,2,4)
+hold on;
+plot(NVV, x_star, 'DisplayName', 'Optimal vector');
+plot(NVV, lb, '--', 'DisplayName', 'Lower Bound');
+plot(NVV, ub, '--', 'DisplayName', 'Upper Bound');
+xlabel('k-th optimisation variable');
+ylabel('optimisation variable value');
+title('Optimisation variable values and bounds');
+
+%% Plotting of inequality constraints altogether
+
+% Linear equality constraints
+eqConLin = Aeq * (x_star.') - beq;
+
+% Vector of number of linear equalities
+NLE = 1 : length(eqConLin);
+
+% Indices of active elements
+indActive = (eqConLin >= op.ConstraintTolerance) | (eqConLin <= - op.ConstraintTolerance);
+
+% Plot constraints
+figure;
+
+subplot(2, 1, 1)
+hold on;
+plot(NLE, eqConLin, 'DisplayName', 'Constraints');
+plot(NLE, zeros(1, length(eqConLin)) + op.ConstraintTolerance, '--', 'DisplayName', 'TolUp');
+plot(NLE, zeros(1, length(eqConLin)) - op.ConstraintTolerance, '--', 'DisplayName', 'TolLow');
+plot(NLE(indActive), eqConLin(indActive), 'ro', 'DisplayName', 'Active');
+xlabel('k-th constraint');
+ylabel('constraint value');
+title('Linear equality constraint values with tolerances');
+
+% Get the vector of initial and final values
+i_ind = 1:itpParam.NumControlPoints:length(x_star); % indices where lie initial pts
+f_ind = itpParam.NumControlPoints:itpParam.NumControlPoints:length(x_star); % indices where lie final pts
+x_if_star = [x_star(i_ind) x_star(f_ind)];
+des_if = [modelParam.InitialAngles; modelParam.FinalAngles].';
+
+% Get the dimensions of the variables upon which constraints are placed
+ticknames = cell(1, length(i_ind) + length(f_ind));
+
+for ii = 1:length(i_ind)
+    ticknames{ii} = num2str(i_ind(ii));
+end
+for ii = 1:length(f_ind)
+    ticknames{ii+length(i_ind)} = num2str(f_ind(ii));
+end
+
+subplot(2, 1, 2)
+hold on;
+plot(NLE, x_if_star, 'DisplayName', 'i&f q');
+plot(NLE, des_if, 'ro', 'DisplayName', 'Desired i&f q');
+xlabel('dimension of optimisation variables');
+ylabel('desired value of variables');
+title('Desired values of some opt variables');
+xticks(NLE);
+xticklabels(ticknames);

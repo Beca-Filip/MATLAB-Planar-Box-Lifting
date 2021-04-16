@@ -32,24 +32,61 @@ load 'nonlinearConstr.mat'
 load 'costFunctionSet.mat'
 
 % Load optimal data
-load ../../data/3DOF/Optimization-Human/Storage_EqualWeights_50_ConstraintPoints.mat
+load ../../data/3DOF/Optimization-Human/Storage_MinimumTorque_50_ConstraintPoints.mat
+
+% Load squat data
+load ../../data/3DOF/Segmentation/SegmentedTrials.mat
+%% Define simulation parameters
+
+% Which trial to take
+simParam.TrialNumber = 1;
+
+% Number of contraint points
+simParam.NumConstraintPoints = 50;
 
 %% Get the cost function and constraint gradient matrices
 
-% Extract optimal solution
+% Extract parameters of the optimal solution
 itpParam = Storage.itpParam;
 optParam = Storage.optParam;
 modelParam = Storage.modelParam;
 x_star = Storage.Results.x_star;
 
+%%
+% Extract optimal control points
+q1_knot_star = x_star(1:itpParam.NumControlPoints);
+q2_knot_star = x_star(1+itpParam.NumControlPoints:2*itpParam.NumControlPoints);
+q3_knot_star = x_star(1+2*itpParam.NumControlPoints:3*itpParam.NumControlPoints);
+
+% Get all coefficients from x_star
+c1_star = splineInterpolation2(itpParam.KnotValues, q1_knot_star, itpParam.InterpolationOrder, itpParam.BoundaryConditions);
+c2_star = splineInterpolation2(itpParam.KnotValues, q2_knot_star, itpParam.InterpolationOrder, itpParam.BoundaryConditions);
+c3_star = splineInterpolation2(itpParam.KnotValues, q3_knot_star, itpParam.InterpolationOrder, itpParam.BoundaryConditions);
+
+% Store spline interpolation parameters
+oldKnotValues = itpParam.KnotValues;
+
+% Modify all parameters to correspond to desired inverse model
+parameter_def_itp_model_opt_inverse;
+
+% Get all trajectories from coefficients
+q1_star = splineCoefToTrajectory(oldKnotValues, c1_star, itpParam.KnotValues, 0);
+q2_star = splineCoefToTrajectory(oldKnotValues, c2_star, itpParam.KnotValues, 0);
+q3_star = splineCoefToTrajectory(oldKnotValues, c3_star, itpParam.KnotValues, 0);
+
+% Stack into a single vector to make the new optimal vector
+x_star = [q1_star, q2_star, q3_star];
+
+%%
+
 % Get the cost function and its gradient
 [J_star, dJ_star] = fullify(@(x)costFunctionSet(x), x_star);
 
 % Get the nonlinear constraint functions and its gradients
-[C_star, Ceq_star, dC_star, dCeq_star] = fullify(@(x)nonlinearConstr, x_star);
+[C_star, Ceq_star, dC_star, dCeq_star] = fullify(@(x)nonlinearConstr(x), x_star);
 
 % Get the linear constraint matrices
-[A_star, b_star, Aeq_star, beq_tar] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
+[A_star, b_star, Aeq_star, beq_tar] = inverseOptimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
 
 %% Preprocess gradient matrices to prepare them for IOC
 
@@ -89,8 +126,8 @@ Ineq = [rshpIneqLin, reshape(C_star, 1, [])];
 
 % Keep only inequality constraints and gradients of inequality constraints
 % which are active
-dIneq = dIneq(:, Ineq < 0);
-Ineq = Ineq(Ineq < 0);
+dIneq = dIneq(:, Ineq >= 0);
+Ineq = Ineq(Ineq >= 0);
 
 % Get the different constants of interest
 

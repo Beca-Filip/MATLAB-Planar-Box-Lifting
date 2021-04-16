@@ -39,7 +39,7 @@ load ../../data/3DOF/Segmentation/SegmentedTrials.mat
 simParam.GenerateCostAndConstraints = false;
 
 % Give a suffix for the saved data
-% simParam.SaveSuffix = 'Feasible_50_ConstraintPoints';
+simParam.SaveSuffix = 'MinimumTorque_50_ConstraintPoints';
 
 % Define which trial we should take
 simParam.TrialNumber = 1;
@@ -140,14 +140,12 @@ optParam.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
 %% Cost Function Parametrization:
 
 % Parametrization of the compound cost function
-optParam.CostFunctionWeights = [0 0 1];
+optParam.CostFunctionWeights = [1 0 0];
 
-% Get the normalization ( Minima and Maxima, to be able to have CF's of the
-% same order of magnitude ) See: Xiang, 2010
-% These are set to constants but a script will be written to determine them
-% automatically
-optParam.CostFunctionMinima = [0 0 0];
-optParam.CostFunctionMaxima = [1 1 1];
+% Load the normalization data
+load ../../data/3DOF/Optimization-Human/CostFunctionNormalisation.mat
+optParam.CostFunctionNormalisation = CostFunctionNormalisation;
+clear CostFunctionNormalisation
 %% Optimization pipeline
 
 % Generate or load linear constraint matrices
@@ -311,12 +309,15 @@ Animate_3DOF(q_star, L, Ts, opts);
 %% Save the optimization data inside structure
 
 % Save the parameters within structure
+Storage.ub = ub;
+Storage.lb = lb;
 Storage.itpParam = itpParam;
 Storage.modelParam = modelParam;
 Storage.optParam = optParam;
 Storage.Results.x_star = x_star;
 Storage.Results.f_star = f_star;
 Storage.Results.ef_star = ef_star;
+Storage.Results.lbd_star = lbd_star;
 
 %% Use the save function
 % If save is desired

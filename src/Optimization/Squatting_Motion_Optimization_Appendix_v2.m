@@ -412,7 +412,8 @@ grid;
 %% Plotting of inequality constraints altogether
 
 % Get the constraints
-[C_star, Ceq_star] = optimConstraintFunctionSquatting3DOF_v2(x_star, itpParam, modelParam);
+% [C_star, Ceq_star] = optimConstraintFunctionSquatting3DOF_v2(x_star, itpParam, modelParam);
+[C_star, Ceq_star, ~, ~] = fullify(@(z)nonlinearConstr(z), x_star);
 
 % Vector of number of constraints
 NCV = 1 : length(C_star);

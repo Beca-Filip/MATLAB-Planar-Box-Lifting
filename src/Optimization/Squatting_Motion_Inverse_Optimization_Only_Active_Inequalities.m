@@ -29,7 +29,7 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load ../../data/3DOF/Optimization-Human/Storage_MinimumTorque_50_ConstraintPoints.mat
+load ../../data/3DOF/Optimization-Human/Storage_EqualWeights_50_ConstraintPoints.mat
 
 %% Get the cost function and constraint gradient matrices
 
@@ -236,13 +236,15 @@ fprintf("The condition number of the cost function part of the recovery matrix i
 
 %% Plot the conditioning
 
+% Plot the conditioning
+figure;
+
 % Get SVD
 [U, S, V] = svd(C);
 
-% Plot the conditioning
-figure; 
+% Plot singular values
+subplot(3, 1, 1)
 barValues = diag(S)';
-barValues = barValues(barValues > 0);
 numbars = length(diag(S));
 barLocations = 1:numbars;
 barNames = {};
@@ -258,3 +260,48 @@ xtickangle(0);
 ylabel('Singular Values');
 title({'Singular values of';'the regressor matrix'});
 legend;
+
+% Get the norm of column vectors
+colNormC = vecnorm(C);
+
+% Plot the norm of column vectors
+subplot(3, 1, 2)
+barValues = colNormC;
+numbars = length(colNormC);
+barLocations = 1:numbars;
+barNames = {};
+for ii = 1 : numbars
+    barNames{ii} = ['|c_{' num2str(ii) '}|'];
+end
+hold on;
+barChart = bar(barLocations, barValues);
+set(barChart, {'DisplayName'}, {'col norm'})
+xticks(barLocations(1:ceil(end/20):end));
+xticklabels(barNames(1:ceil(end/20):end));
+xtickangle(0);
+ylabel('Col norms');
+title({'Norms of the columns of';'the regressor matrix'});
+legend;
+
+% Get QR decomp
+[Q, R, P] = qr(C);
+
+% Plot QR values
+subplot(3, 1, 3)
+barValues = sort(diag(R)', 'descend');
+numbars = length(diag(R));
+barLocations = 1:numbars;
+barNames = {};
+for ii = 1 : numbars
+    barNames{ii} = ['r_{' num2str(ii) '}'];
+end
+hold on;
+barChart = bar(barLocations, barValues);
+set(barChart, {'DisplayName'}, {'QV'})
+xticks(barLocations(1:ceil(end/20):end));
+xticklabels(barNames(1:ceil(end/20):end));
+xtickangle(0);
+ylabel('R diag elems');
+title({'Sorted diagonal elements of R in'; ' QR decomp of the regressor matrix'});
+legend;
+

@@ -234,7 +234,7 @@ fprintf("The size of the cost function part of the recovery matrix is [%d, %d] w
 fprintf("The condition number of the cost function part of the recovery matrix is %.4f.\n", cond(C(:, 1:Ncf)));
 
 
-%% Plot the conditioning
+%% Plot the sorted conditioning
 
 % Plot the conditioning
 figure;
@@ -266,7 +266,7 @@ colNormC = vecnorm(C);
 
 % Plot the norm of column vectors
 subplot(3, 1, 2)
-barValues = colNormC;
+barValues = sort(colNormC, 'descend');
 numbars = length(colNormC);
 barLocations = 1:numbars;
 barNames = {};

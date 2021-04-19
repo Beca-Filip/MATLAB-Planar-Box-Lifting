@@ -29,8 +29,7 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load ../../data/3DOF/Optimization-Human/Storage_EqualWeights_50_ConstraintPoints.mat
-
+load ../../data/3DOF/Optimization-Human/Storage_MinimumTorque_50_ConstraintPoints.mat
 %% Get the cost function and constraint gradient matrices
 
 % Extract optimal solution
@@ -99,7 +98,7 @@ Ineq = [reshape(C_star, 1, []), rshpIneqLin, rshpLb, rshpUb];
 
 % Keep only inequality constraints and gradients of inequality constraints
 % which are active but store full versions for analysis
-dIneq_full =        dIneq;
+dIneq_full = dIneq;
 Ineq_full = Ineq;
 dIneq = dIneq(:, Ineq >= 0);
 Ineq = Ineq(Ineq >= 0);

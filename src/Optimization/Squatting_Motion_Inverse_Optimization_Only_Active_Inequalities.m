@@ -84,7 +84,7 @@ A_ub_star = eye(length(x_star));
 b_ub_star = ub;
 
 % Append nonlinear, linear and bound inequality gradients into a single matrix
-dIneq = [dC_star, A_star, A_lb_star, A_ub_star];
+dIneq = [A_star, dC_star, A_lb_star, A_ub_star];
 
 % Append nonlinear and linear equality gradients into a single matrix
 dEq = [Aeq_star, dCeq_star];
@@ -94,7 +94,7 @@ dEq = [Aeq_star, dCeq_star];
 rshpIneqLin = reshape(x_star * A_star - reshape(b_star, 1, []), 1, []);
 rshpLb = x_star * A_lb_star - b_lb_star;
 rshpUb = x_star * A_ub_star - b_ub_star;
-Ineq = [reshape(C_star, 1, []), rshpIneqLin, rshpLb, rshpUb];
+Ineq = [rshpIneqLin, reshape(C_star, 1, []), rshpLb, rshpUb];
 
 % Keep only inequality constraints and gradients of inequality constraints
 % which are active but store full versions for analysis

@@ -29,7 +29,7 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load ../../data/3DOF/Optimization-Human/Storage_MinimumTorque_50_ConstraintPoints.mat
+load ../../data/3DOF/Optimization-Human/Storage_EqualWeights_50_ConstraintPoints.mat
 
 %% Get the cost function and constraint gradient matrices
 
@@ -50,8 +50,8 @@ x_star = Storage.Results.x_star;
 
 % Generate upper and lower bounds
 One = ones(1, itpParam.NumControlPoints);
-lb = [modelParam.JointLimits(1, 1)*One, modelParam.JointLimits(1, 2)*One, modelParam.JointLimits(1, 3)*One];
-ub = [modelParam.JointLimits(2, 1)*One, modelParam.JointLimits(2, 2)*One, modelParam.JointLimits(2, 3)*One];
+lb_doc = [modelParam.JointLimits(1, 1)*One, modelParam.JointLimits(1, 2)*One, modelParam.JointLimits(1, 3)*One];
+ub_doc = [modelParam.JointLimits(2, 1)*One, modelParam.JointLimits(2, 2)*One, modelParam.JointLimits(2, 3)*One];
 
 %% Preprocess gradient matrices to prepare them for IOC
 
@@ -80,9 +80,9 @@ end
 
 % Gradient of lower and upper bounds
 A_lb_star = -eye(length(x_star));
-b_lb_star = -lb;
+b_lb_star = -lb_doc;
 A_ub_star = eye(length(x_star));
-b_ub_star = ub;
+b_ub_star = ub_doc;
 
 % Append nonlinear, linear and bound inequality gradients into a single matrix
 dIneq = [A_star, dC_star, A_lb_star, A_ub_star];

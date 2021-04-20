@@ -29,7 +29,7 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load ../../data/3DOF/Optimization-Human/Storage_EqualWeights_50_ConstraintPoints.mat
+load ../../data/3DOF/Optimization-Human/Storage_MinimumTorque_50_ConstraintPoints.mat
 
 %% Get the cost function and constraint gradient matrices
 
@@ -47,6 +47,11 @@ x_star = Storage.Results.x_star;
 
 % Get the linear constraint matrices
 [A_star, b_star, Aeq_star, beq_tar] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
+
+% Generate upper and lower bounds
+One = ones(1, itpParam.NumControlPoints);
+lb = [modelParam.JointLimits(1, 1)*One, modelParam.JointLimits(1, 2)*One, modelParam.JointLimits(1, 3)*One];
+ub = [modelParam.JointLimits(2, 1)*One, modelParam.JointLimits(2, 2)*One, modelParam.JointLimits(2, 3)*One];
 
 %% Preprocess gradient matrices to prepare them for IOC
 
@@ -73,16 +78,24 @@ if size(Aeq_star, 1) ~= length(x_star)
     Aeq_star = Aeq_star';
 end
 
-% Append nonlinear and linear inequality gradients into a single matrix
-dIneq = [A_star, dC_star];
+% Gradient of lower and upper bounds
+A_lb_star = -eye(length(x_star));
+b_lb_star = -lb;
+A_ub_star = eye(length(x_star));
+b_ub_star = ub;
+
+% Append nonlinear, linear and bound inequality gradients into a single matrix
+dIneq = [A_star, dC_star, A_lb_star, A_ub_star];
 
 % Append nonlinear and linear equality gradients into a single matrix
 dEq = [Aeq_star, dCeq_star];
 
 % Append nonlinear and linear inequality values into a single vector but
 % first reshape them into row vectors
-rshpIneqLin = reshape(x_star * reshape(A_star, length(x_star), []) - reshape(b_star, 1, []), 1, []);
-Ineq = [rshpIneqLin, reshape(C_star, 1, [])];
+rshpIneqLin = reshape(x_star * A_star - reshape(b_star, 1, []), 1, []);
+rshpLb = x_star * A_lb_star - b_lb_star;
+rshpUb = x_star * A_ub_star - b_ub_star;
+Ineq = [rshpIneqLin, reshape(C_star, 1, []), rshpLb, rshpUb];
 
 % Get the different constants of interest
 
@@ -201,7 +214,159 @@ legend;
 
 % Check for J_star
 [dJ_star_sub, ind_dJ_star] = licols(dJ_star, 1e-3);
-size(ind_dJ_star)
+% size(ind_dJ_star)
 % Check for matrix C
 [C_sub, ind_C] = licols(C, 1e-3);
-size(ind_C)
+% size(ind_C)
+% Print the residual norm
+fprintf("The residual norm of inverse optimization is %.4f.\n", rn_ioc);
+% Check rank of C
+fprintf("The size of the recovery matrix is [%d, %d] while its rank is %d.\n", size(C), rank(C));
+fprintf("The condition number of the recovery matrix is %.4f.\n", cond(C));
+% Check rank of part of C corresponding to the part of the recovery matrix
+% that is relative to the cost functions
+fprintf("The size of the cost function part of the recovery matrix is [%d, %d] while its rank is %d.\n", size(C(:, 1:Ncf)), rank(C(:, 1:Ncf)));
+fprintf("The condition number of the cost function part of the recovery matrix is %.4f.\n", cond(C(:, 1:Ncf)));
+
+
+%% Plot the sorted conditioning
+
+% Plot the conditioning
+figure;
+
+% Get SVD
+[U, S, V] = svd(C);
+
+% Plot singular values
+subplot(3, 1, 1)
+barValues = diag(S)';
+numbars = length(diag(S));
+barLocations = 1:numbars;
+barNames = {};
+for ii = 1 : numbars
+    barNames{ii} = ['s_{' num2str(ii) '}'];
+end
+hold on;
+barChart = bar(barLocations, barValues);
+set(barChart, {'DisplayName'}, {'SV'})
+xticks(barLocations(1:ceil(end/20):end));
+xticklabels(barNames(1:ceil(end/20):end));
+xtickangle(0);
+ylabel('Singular Values');
+title({'Singular values of';'the regressor matrix'});
+legend;
+
+% Get the norm of column vectors
+colNormC = vecnorm(C);
+
+% Plot the norm of column vectors
+subplot(3, 1, 2)
+barValues = sort(colNormC, 'descend');
+numbars = length(colNormC);
+barLocations = 1:numbars;
+barNames = {};
+for ii = 1 : numbars
+    barNames{ii} = ['|c_{' num2str(ii) '}|'];
+end
+hold on;
+barChart = bar(barLocations, barValues);
+set(barChart, {'DisplayName'}, {'col norm'})
+xticks(barLocations(1:ceil(end/20):end));
+xticklabels(barNames(1:ceil(end/20):end));
+xtickangle(0);
+ylabel('Col norms');
+title({'Sorted norms of the columns of';'the regressor matrix'});
+legend;
+
+% Get QR decomp
+[Q, R, P] = qr(C);
+
+% Plot QR values
+subplot(3, 1, 3)
+barValues = sort(diag(R)', 'descend');
+numbars = length(diag(R));
+barLocations = 1:numbars;
+barNames = {};
+for ii = 1 : numbars
+    barNames{ii} = ['r_{' num2str(ii) '}'];
+end
+hold on;
+barChart = bar(barLocations, barValues);
+set(barChart, {'DisplayName'}, {'QV'})
+xticks(barLocations(1:ceil(end/20):end));
+xticklabels(barNames(1:ceil(end/20):end));
+xtickangle(0);
+ylabel('R diag elems');
+title({'Sorted diagonal elements of R in'; ' QR decomp of the regressor matrix'});
+legend;
+
+%% Plot the unsorted conditioning
+
+% Plot the conditioning
+figure;
+
+% Get SVD
+[U, S, V] = svd(C);
+
+% Plot singular values
+subplot(3, 1, 1)
+barValues = diag(S)';
+numbars = length(diag(S));
+barLocations = 1:numbars;
+barNames = {};
+for ii = 1 : numbars
+    barNames{ii} = ['s_{' num2str(ii) '}'];
+end
+hold on;
+barChart = bar(barLocations, barValues);
+set(barChart, {'DisplayName'}, {'SV'})
+xticks(barLocations(1:ceil(end/20):end));
+xticklabels(barNames(1:ceil(end/20):end));
+xtickangle(0);
+ylabel('Singular Values');
+title({'Singular values of';'the regressor matrix'});
+legend;
+
+% Get the norm of column vectors
+colNormC = vecnorm(C);
+
+% Plot the norm of column vectors
+subplot(3, 1, 2)
+barValues = colNormC;
+numbars = length(colNormC);
+barLocations = 1:numbars;
+barNames = {};
+for ii = 1 : numbars
+    barNames{ii} = ['|c_{' num2str(ii) '}|'];
+end
+hold on;
+barChart = bar(barLocations, barValues);
+set(barChart, {'DisplayName'}, {'col norm'})
+xticks(barLocations(1:ceil(end/20):end));
+xticklabels(barNames(1:ceil(end/20):end));
+xtickangle(0);
+ylabel('Col norms');
+title({'Unsorted norms of the columns of';'the regressor matrix'});
+legend;
+
+% Get QR decomp
+[Q, R, P] = qr(C);
+
+% Plot QR values
+subplot(3, 1, 3)
+barValues = diag(R)';
+numbars = length(diag(R));
+barLocations = 1:numbars;
+barNames = {};
+for ii = 1 : numbars
+    barNames{ii} = ['r_{' num2str(ii) '}'];
+end
+hold on;
+barChart = bar(barLocations, barValues);
+set(barChart, {'DisplayName'}, {'QV'})
+xticks(barLocations(1:ceil(end/20):end));
+xticklabels(barNames(1:ceil(end/20):end));
+xtickangle(0);
+ylabel('R diag elems');
+title({'Unsorted diagonal elements of R in'; ' QR decomp of the regressor matrix'});
+legend;

@@ -26,21 +26,13 @@ end
 % Load data
 load('../../data/3DOF/Optimization-Human/squat_param.mat')
 
-% Add generated functions to path
-addpath('inverseOptimSquattingComputables\');
-
 % Load segmented trajectories in Trial struct
 load ../../data/3DOF/Segmentation/SegmentedTrials.mat
 
 %% Define some simulation parameters
 
-% Should we generate all the simulation functions and gradients or can they
-% be loaded
-simParam.GenerateCostAndConstraints = true;
-
 % Give a suffix for the saved data
 simParam.NumConstraintPoints=50;
-% simParam.SaveSuffix = 'EqualWeights_50_ConstraintPoints';
 
 % Define which trial we should take
 simParam.TrialNumber = 1;

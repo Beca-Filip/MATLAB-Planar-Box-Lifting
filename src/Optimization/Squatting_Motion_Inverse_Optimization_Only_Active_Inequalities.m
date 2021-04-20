@@ -45,7 +45,7 @@ x_star = Storage.Results.x_star;
 [C_star, Ceq_star, dC_star, dCeq_star] = fullify(@(x)nonlinearConstr(x), x_star);
 
 % Get the linear constraint matrices
-[A_star, b_star, Aeq_star, beq_tar] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
+[A_star, b_star, Aeq_star, beq_star] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
 
 % Generate upper and lower bounds
 One = ones(1, itpParam.NumControlPoints);

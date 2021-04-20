@@ -43,7 +43,7 @@ x_star = Storage.Results.x_star;
 [J_star, dJ_star] = fullify(@(x)costFunctionSet(x), x_star);
 
 % Get the nonlinear constraint functions and its gradients
-[C_star, Ceq_star, dC_star, dCeq_star] = fullify(@(x)nonlinearConstr, x_star);
+[C_star, Ceq_star, dC_star, dCeq_star] = fullify(@(x)nonlinearConstr(x), x_star);
 
 % Get the linear constraint matrices
 [A_star, b_star, Aeq_star, beq_tar] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);

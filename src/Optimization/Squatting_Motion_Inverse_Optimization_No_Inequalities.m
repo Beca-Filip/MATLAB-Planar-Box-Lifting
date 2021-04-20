@@ -29,7 +29,7 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load ../../data/3DOF/Optimization-Human/Storage_MinimumTorque_50_ConstraintPoints.mat
+load ../../data/3DOF/Optimization-Human/Storage_MinimumPower_50_ConstraintPoints.mat
 
 %% Get the cost function and constraint gradient matrices
 
@@ -47,6 +47,11 @@ x_star = Storage.Results.x_star;
 
 % Get the linear constraint matrices
 [A_star, b_star, Aeq_star, beq_tar] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
+
+% Generate upper and lower bounds
+One = ones(1, itpParam.NumControlPoints);
+lb = [modelParam.JointLimits(1, 1)*One, modelParam.JointLimits(1, 2)*One, modelParam.JointLimits(1, 3)*One];
+ub = [modelParam.JointLimits(2, 1)*One, modelParam.JointLimits(2, 2)*One, modelParam.JointLimits(2, 3)*One];
 
 %% Preprocess gradient matrices to prepare them for IOC
 
@@ -73,16 +78,24 @@ if size(Aeq_star, 1) ~= length(x_star)
     Aeq_star = Aeq_star';
 end
 
-% Append nonlinear and linear inequality gradients into a single matrix
-dIneq = [A_star, dC_star];
+% Gradient of lower and upper bounds
+A_lb_star = -eye(length(x_star));
+b_lb_star = -lb;
+A_ub_star = eye(length(x_star));
+b_ub_star = ub;
+
+% Append nonlinear, linear and bound inequality gradients into a single matrix
+dIneq = [dC_star, A_star, A_lb_star, A_ub_star];
 
 % Append nonlinear and linear equality gradients into a single matrix
 dEq = [Aeq_star, dCeq_star];
 
 % Append nonlinear and linear inequality values into a single vector but
 % first reshape them into row vectors
-rshpIneqLin = reshape(x_star * reshape(A_star, length(x_star), []) - reshape(b_star, 1, []), 1, []);
-Ineq = [rshpIneqLin, reshape(C_star, 1, [])];
+rshpIneqLin = reshape(x_star * A_star - reshape(b_star, 1, []), 1, []);
+rshpLb = x_star * A_lb_star - b_lb_star;
+rshpUb = x_star * A_ub_star - b_ub_star;
+Ineq = [reshape(C_star, 1, []), rshpIneqLin, rshpLb, rshpUb];
 
 % Discard Inequalities
 Ineq = [];
@@ -209,3 +222,12 @@ size(ind_dJ_star)
 % Check for matrix C
 [C_sub, ind_C] = licols(C, 1e-3);
 size(ind_C)
+% Print the residual norm
+fprintf("The residual norm of inverse optimization is %.4f.\n", rn_ioc);
+% Check rank of C
+fprintf("The size of the recovery matrix is [%d, %d] while its rank is %d.\n", size(C), rank(C));
+fprintf("The condition number of the recovery matrix is %.4f.\n", cond(C));
+% Check rank of part of C corresponding to the part of the recovery matrix
+% that is relative to the cost functions
+fprintf("The size of the cost function part of the recovery matrix is [%d, %d] while its rank is %d.\n", size(C(:, 1:Ncf)), rank(C(:, 1:Ncf)));
+fprintf("The condition number of the cost function part of the recovery matrix is %.4f.\n", cond(C(:, 1:Ncf)));

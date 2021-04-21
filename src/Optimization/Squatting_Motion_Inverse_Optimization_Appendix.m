@@ -119,3 +119,56 @@ ylabel('Values of ineq mult');
 title({'Investigating the upper bound';'inequality lagrange multipliers'});
 legend;
 
+%% Redo DOC with retrieved weights
+
+% Re-assign weights
+optParam.CostFunctionWeights = alpha_ioc';
+
+% Prepare the optimization pipeline: optimization options
+op = optimoptions('fmincon',...   
+                  'Algorithm', 'sqp',...
+                  'Display', 'Iter', ...
+                  'MaxIter', 1e4, ...
+                  'MaxFunctionEvaluations', 2e5, ...
+                  'SpecifyObjectiveGradient', true, ...
+                  'SpecifyConstraintGradient', true,...
+                  'TolFun', 1e-3, ...
+                  'UseParallel', 'Always' ...
+                  );
+              
+% Initialize at optimal point
+x0 = x_star;
+              
+% Run the optimization
+[x_star2, f_star2, ef_star2, out_star2, lbd_star2, grad_star2, hess_star2] = ...
+        fmincon(...
+            @(x)costFunctionWrap(x, optParam), ...
+            x0, A_star, b_star, Aeq_star', beq_star, lb_doc, ub_doc, ...
+            @(x)constraintFunctionWrap(x), ...
+            op ...
+        );
+    
+% Plot the difference between the results
+figure;
+
+% Plot both results
+subplot(2,1,1)
+hold on;
+plot(x_star, 'b', 'LineWidth', 1.2, 'DisplayName', 'Original');
+plot(x_star2, 'r-o', 'DisplayName', 'Retrieved');
+xlabel('k-th dimension');
+ylabel('opt var val');
+title({'Comparing the optimal solution that we get with'; 'DOC weights and IOC retrieved weights'});
+legend;
+grid;
+
+% Plot their squared difference
+x_diff = (x_star - x_star2).^2;
+subplot(2,1,2)
+hold on;
+plot(x_diff, 'DisplayName', 'sq diff');
+xlabel('k-th dimension');
+ylabel('var val diff');
+title({'Squared difference between the optimal solution that we get with'; 'DOC weights and IOC retrieved weights'});
+legend;
+grid;

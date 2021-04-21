@@ -71,7 +71,8 @@ set(plotChart, {'DisplayName'}, {'Original'; 'Retrieved'})
 set(plotChart, {'LineWidth'}, {2; 1.5});
 set(plotChart, {'LineStyle'}, {'-'; '-.'});
 plotActive = plot(xLocations(actInd), mu_star(xLocations(actInd)), 'o');
-set(plotActive, {'DisplayName'}, {'Active'})
+set(plotActive, {'DisplayName'}, {'Active'});
+set(plotActive, {'LineWidth'}, {2});
 xticks(tickLocations);
 xticklabels(tickNames);
 xtickangle(0);
@@ -98,6 +99,7 @@ set(plotChart, {'LineWidth'}, {2; 1.5});
 set(plotChart, {'LineStyle'}, {'-'; '-.'});
 plotActive = plot(xLocations(actInd), mu_star(xLocations(actInd)), 'o');
 set(plotActive, {'DisplayName'}, {'Active'});
+set(plotActive, {'LineWidth'}, {2});
 xticks(tickLocations);
 xticklabels(tickNames);
 xtickangle(0);
@@ -124,6 +126,7 @@ set(plotChart, {'LineWidth'}, {2; 1.5});
 set(plotChart, {'LineStyle'}, {'-'; '-.'});
 plotActive = plot(xLocations(actInd), mu_star(xLocations(actInd)), 'o');
 set(plotActive, {'DisplayName'}, {'Active'});
+set(plotActive, {'LineWidth'}, {2});
 xticks(tickLocations);
 xticklabels(tickNames);
 xtickangle(0);

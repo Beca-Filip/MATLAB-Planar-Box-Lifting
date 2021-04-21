@@ -32,6 +32,14 @@ addpath('optimSquattingComputables\');
 load_filename = 'MinimumTorque_50_ConstraintPoints';
 load(['../../data/3DOF/Optimization-Human/Storage_' load_filename '.mat']);
 
+%% Create flags and parameters for the running of this script
+
+% Create a flag for saving graphs
+scriptParam.SaveGraphs = true;
+
+% Create a prefix for saving graphs
+scriptParam.SavePrefix = [load_filename '_NoIneq_'];
+
 %% Get the cost function and constraint gradient matrices
 
 % Extract optimal solution

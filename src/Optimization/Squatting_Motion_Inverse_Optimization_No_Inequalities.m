@@ -97,6 +97,11 @@ rshpLb = x_star * A_lb_star - b_lb_star;
 rshpUb = x_star * A_ub_star - b_ub_star;
 Ineq = [reshape(C_star, 1, []), rshpIneqLin, rshpLb, rshpUb];
 
+% Append linear and nonlinear equality values into a single vector, but
+% make them row vectors first
+rshpEqLin = reshape(x_star * Aeq_star - reshape(beq_star, 1, []), 1, []);
+Eq = [rshpEqLin, reshape(Ceq_star, 1, [])];
+
 % Discard Inequalities
 Ineq = [];
 dIneq = [];

@@ -29,7 +29,8 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load ../../data/3DOF/Optimization-Human/Storage_MinimumPower_50_ConstraintPoints.mat
+load_filename = 'MinimumTorque_50_ConstraintPoints';
+load(['../../data/3DOF/Optimization-Human/Storage_' load_filename '.mat']);
 
 %% Get the cost function and constraint gradient matrices
 

@@ -50,9 +50,10 @@ title({'Investigating the equality';'lagrange multipliers'});
 legend;
 
 % Compare nonlinear inequality multipliers third
-% Too many multipliers => take 10 in all
+% Too many multipliers => put only 10 in xticks
 subplot(3, 2, [3 4]);
-Nnli = length(C_star);
+actInd = find(C_star >= 0); % Find indices of active inequalities
+Nnli = length(C_star);  % Num. of nonlinear inequalities
 plotValues = [mu_star(1:Nnli); mu_ioc(1:Nnli)'];
 numbars = Nnli;
 xLocations = 1:numbars;
@@ -66,6 +67,8 @@ plotChart = plot(xLocations, plotValues);
 set(plotChart, {'DisplayName'}, {'Original'; 'Retrieved'})
 set(plotChart, {'LineWidth'}, {2; 1.5});
 set(plotChart, {'LineStyle'}, {'-'; '-.'});
+plotActive = plot(xLocations(actInd), mu_star(xLocations(actInd)), 'o');
+set(plotActive, {'DisplayName'}, {'Active'})
 xticks(tickLocations);
 xticklabels(tickNames);
 xtickangle(0);
@@ -75,6 +78,7 @@ legend;
 
 % Plot lower bound multipliers
 subplot(3, 2, 5);
+actInd = find(-x_star + lb_doc >= 0);   % Find active bound inequalities
 Nlb = length(lb_doc); % Number of lower bound inequalities
 plotValues = [mu_star(Nnli+1:Nnli+Nlb); mu_ioc(Nnli+1:Nnli+Nlb)']; % Multipliers corresponding to lower bounds
 numbars = Nlb;
@@ -89,6 +93,8 @@ plotChart = plot(xLocations, plotValues);
 set(plotChart, {'DisplayName'}, {'Original'; 'Retrieved'})
 set(plotChart, {'LineWidth'}, {2; 1.5});
 set(plotChart, {'LineStyle'}, {'-'; '-.'});
+plotActive = plot(xLocations(actInd), mu_star(xLocations(actInd)), 'o');
+set(plotActive, {'DisplayName'}, {'Active'});
 xticks(tickLocations);
 xticklabels(tickNames);
 xtickangle(0);
@@ -98,6 +104,7 @@ legend;
 
 % Plot upper bound multipliers
 subplot(3, 2, 6);
+actInd = find(x_star - ub_doc >= 0);    % Find active bound inequalities
 Nub = length(ub_doc); % Number of upper bound inequalities
 plotValues = [mu_star(Nnli+Nlb+1:Nnli+Nlb+Nub); mu_ioc(Nnli+Nlb+1:Nnli+Nlb+Nub)']; % Multipliers corresponding to upper bounds
 numbars = Nub;
@@ -109,9 +116,11 @@ for ii = 1 : length(tickLocations)
 end
 hold on;
 plotChart = plot(xLocations, plotValues);
-set(plotChart, {'DisplayName'}, {'Original'; 'Retrieved'})
+set(plotChart, {'DisplayName'}, {'Original'; 'Retrieved'});
 set(plotChart, {'LineWidth'}, {2; 1.5});
 set(plotChart, {'LineStyle'}, {'-'; '-.'});
+plotActive = plot(xLocations(actInd), mu_star(xLocations(actInd)), 'o');
+set(plotActive, {'DisplayName'}, {'Active'});
 xticks(tickLocations);
 xticklabels(tickNames);
 xtickangle(0);
@@ -152,7 +161,7 @@ x0 = x_star;
 figure;
 
 % Plot both results
-subplot(2,1,1)
+subplot(3,1,1)
 hold on;
 plot(x_star, 'b', 'LineWidth', 1.2, 'DisplayName', 'Original');
 plot(x_star2, 'r-o', 'DisplayName', 'Retrieved');
@@ -164,7 +173,7 @@ grid;
 
 % Plot their squared difference
 x_diff = (x_star - x_star2).^2;
-subplot(2,1,2)
+subplot(3,1,2)
 hold on;
 plot(x_diff, 'DisplayName', 'sq diff');
 xlabel('k-th dimension');
@@ -172,3 +181,17 @@ ylabel('var val diff');
 title({'Squared difference between the optimal solution that we get with'; 'DOC weights and IOC retrieved weights'});
 legend;
 grid;
+
+% Plot the difference in function value
+subplot(3,1,3)
+hold on;
+barValues = [Storage.Results.f_star f_star2];
+numbars = length(barValues);
+barLocations = 1:numbars;
+barChart = bar(barLocations, barValues);
+barChart.FaceColor = 'flat';    % Let the facecolors be controlled by CData
+barChart.CData = repmat(linspace(0.2, 0.8, numbars)', 1, 3);     % Set CData
+xticks(barLocations);
+xticklabels({'DOC Optimal Trajectory', 'IOC Optimal Trajectory'});
+ylabel('Cost Function Value');
+title({"Comparison of optimal solution's cost function values"; "between DOC and IOC optimal"});

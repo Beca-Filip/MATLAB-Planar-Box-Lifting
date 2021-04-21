@@ -165,7 +165,8 @@ mu_ioc = vars_ioc(Ncf+m+1 : Ncf+m+p);
 
 %% Investigate the residual norm the residual itself
 
-figure;
+% Create figure handle
+fig_residuals = figure;
 
 subplot(1, 3, [1 2])
 % Plot residual accross dimension
@@ -204,7 +205,7 @@ title({'Investigating the residual';' norm of the Lagrangian'});
 
 %% Compare found cost function coefficient values to stored coefficient values
 
-figure;
+fig_weightretrieval = figure;
 % Plot a bars that represent the cost implication
 barValues = [optParam.CostFunctionWeights; alpha_ioc'];
 numbars = length(alpha_ioc);
@@ -245,7 +246,7 @@ fprintf("The condition number of the cost function part of the recovery matrix i
 %% Plot the sorted conditioning
 
 % Plot the conditioning
-figure;
+fig_sortedconditioning = figure;
 
 % Get SVD
 [U, S, V] = svd(C);
@@ -316,7 +317,7 @@ legend;
 %% Plot the unsorted conditioning
 
 % Plot the conditioning
-figure;
+fig_unsortedconditioning = figure;
 
 % Get SVD
 [U, S, V] = svd(C);

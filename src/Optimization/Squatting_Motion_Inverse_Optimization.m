@@ -35,7 +35,7 @@ load(['../../data/3DOF/Optimization-Human/Storage_' load_filename '.mat']);
 %% Create flags and parameters for the running of this script
 
 % Create a flag for saving graphs
-scriptParam.SaveGraphs = false;
+scriptParam.SaveGraphs = true;
 
 % Create a prefix for saving graphs
 scriptParam.SavePrefix = [load_filename '_Full_'];
@@ -46,6 +46,9 @@ scriptParam.SavePathFigs = '../../data/Produced-Graphs/Inverse-Optimization/matF
 
 % Create a file format suffix
 scriptParam.SaveFormat = '.png';
+
+% Create graph outer positions parameter
+scriptParam.GraphOuterPosition = [0 0 1920 1080];
 
 %% Get the cost function and constraint gradient matrices
 
@@ -176,6 +179,9 @@ mu_ioc = vars_ioc(Ncf+m+1 : Ncf+m+p);
 % Create figure handle
 fig_residuals = figure;
 
+% Set position of graph
+fig_residuals.OuterPosition = scriptParam.GraphOuterPosition;
+
 subplot(1, 3, [1 2])
 % Plot residual accross dimension
 barValues = res_ioc;
@@ -223,6 +229,10 @@ end
 %% Compare found cost function coefficient values to stored coefficient values
 
 fig_weightretrieval = figure;
+
+% Set position of graph
+fig_weightretrieval.OuterPosition = scriptParam.GraphOuterPosition;
+
 % Plot a bars that represent the cost implication
 barValues = [optParam.CostFunctionWeights; alpha_ioc'];
 numbars = length(alpha_ioc);
@@ -273,6 +283,9 @@ fprintf("The condition number of the cost function part of the recovery matrix i
 
 % Plot the conditioning
 fig_sortedconditioning = figure;
+
+% Set position of graph
+fig_sortedconditioning.OuterPosition = scriptParam.GraphOuterPosition;
 
 % Get SVD
 [U, S, V] = svd(C);
@@ -353,6 +366,9 @@ end
 
 % Plot the conditioning
 fig_unsortedconditioning = figure;
+
+% Set position of graph
+fig_unsortedconditioning.OuterPosition = scriptParam.GraphOuterPosition;
 
 % Get SVD
 [U, S, V] = svd(C);

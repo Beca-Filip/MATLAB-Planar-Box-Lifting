@@ -9,7 +9,10 @@ mu_star = [Storage.Results.lbd_star.ineqlin.', Storage.Results.lbd_star.ineqnonl
 vars_star = [alpha_star, lambda_star, mu_star].';
 
 % Compare graphically with the retrieved variables
-figure;
+fig_ioresults = figure;
+
+% Set position of graph
+fig_ioresults.OuterPosition = scriptParam.GraphOuterPosition;
 
 % Compare weights first
 subplot(3, 2, 1)
@@ -28,7 +31,7 @@ xticklabels(barNames);
 xtickangle(0);
 ylabel('Values of params');
 title({'Investigating the';'cost function parametrization'});
-legend;
+legend('Location', 'Best');
 
 % Compare equality multipliers second
 subplot(3, 2, 2)
@@ -47,7 +50,7 @@ xticklabels(barNames);
 xtickangle(0);
 ylabel('Values of eq mult');
 title({'Investigating the equality';'lagrange multipliers'});
-legend;
+legend('Location', 'Best');
 
 % Compare nonlinear inequality multipliers third
 % Too many multipliers => put only 10 in xticks
@@ -74,7 +77,7 @@ xticklabels(tickNames);
 xtickangle(0);
 ylabel('Values of ineq mult');
 title({'Investigating the nonlinear';'inequality lagrange multipliers'});
-legend;
+legend('Location', 'Best');
 
 % Plot lower bound multipliers
 subplot(3, 2, 5);
@@ -100,7 +103,7 @@ xticklabels(tickNames);
 xtickangle(0);
 ylabel('Values of ineq mult');
 title({'Investigating the lower bound';'inequality lagrange multipliers'});
-legend;
+legend('Location', 'Best');
 
 % Plot upper bound multipliers
 subplot(3, 2, 6);
@@ -126,7 +129,16 @@ xticklabels(tickNames);
 xtickangle(0);
 ylabel('Values of ineq mult');
 title({'Investigating the upper bound';'inequality lagrange multipliers'});
-legend;
+legend('Location', 'Best');
+
+% Save the graph
+if scriptParam.SaveGraphs    
+    % Save the graphs in given directory
+    saveas(fig_ioresults, [scriptParam.SavePath, scriptParam.SavePrefix, 'IOResults', scriptParam.SaveFormat]);
+    
+    % Save the graph in .fig format for eventual later editing
+    saveas(fig_ioresults, [scriptParam.SavePathFigs scriptParam.SavePrefix 'IOResults.fig']);
+end
 
 %% Redo DOC with retrieved weights
 
@@ -158,7 +170,10 @@ x0 = x_star;
         );
     
 % Plot the difference between the results
-figure;
+fig_retrieveddoc = figure;
+
+% Set position of graph
+fig_retrieveddoc.OuterPosition = scriptParam.GraphOuterPosition;
 
 % Plot both results
 subplot(3,1,1)
@@ -168,7 +183,7 @@ plot(x_star2, 'r-o', 'DisplayName', 'Retrieved');
 xlabel('k-th dimension');
 ylabel('opt var val');
 title({'Comparing the optimal solution that we get with'; 'DOC weights and IOC retrieved weights'});
-legend;
+legend('Location', 'Best');
 grid;
 
 % Plot their squared difference
@@ -179,7 +194,7 @@ plot(x_diff, 'DisplayName', 'sq diff');
 xlabel('k-th dimension');
 ylabel('var val diff');
 title({'Squared difference between the optimal solution that we get with'; 'DOC weights and IOC retrieved weights'});
-legend;
+legend('Location', 'Best');
 grid;
 
 % Plot the difference in function value
@@ -195,3 +210,12 @@ xticks(barLocations);
 xticklabels({'DOC Optimal Trajectory', 'IOC Optimal Trajectory'});
 ylabel('Cost Function Value');
 title({"Comparison of optimal solution's cost function values"; "between DOC and IOC optimal"});
+
+% Save the graph
+if scriptParam.SaveGraphs    
+    % Save the graphs in given directory
+    saveas(fig_ioresults, [scriptParam.SavePath, scriptParam.SavePrefix, 'RetrievedDOC', scriptParam.SaveFormat]);
+    
+    % Save the graph in .fig format for eventual later editing
+    saveas(fig_ioresults, [scriptParam.SavePathFigs scriptParam.SavePrefix 'RetrievedDOC.fig']);
+end

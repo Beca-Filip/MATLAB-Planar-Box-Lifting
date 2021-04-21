@@ -40,6 +40,13 @@ scriptParam.SaveGraphs = true;
 % Create a prefix for saving graphs
 scriptParam.SavePrefix = [load_filename '_NoIneq_'];
 
+% Create a saving path for graphs
+scriptParam.SavePath = '../../data/Produced-Graphs/Inverse-Optimization/';
+scriptParam.SavePathFigs = '../../data/Produced-Graphs/Inverse-Optimization/matFigs/';
+
+% Create a file format suffix
+scriptParam.SaveFormat = '.png';
+
 %% Get the cost function and constraint gradient matrices
 
 % Extract optimal solution
@@ -208,6 +215,15 @@ xtickangle(0);
 ylabel('Residual norm of the Lagrangian');
 title({'Investigating the residual';' norm of the Lagrangian'});
 
+% Save the graph
+if scriptParam.SaveGraphs    
+    % Save the graphs in given directory
+    saveas(fig_residuals, [scriptParam.SavePath, scriptParam.SavePrefix, 'Residuals', scriptParam.SaveFormat]);
+    
+    % Save the graph in .fig format for eventual later editing
+    saveas(fig_residuals, [scriptParam.SavePathFigs scriptParam.SavePrefix 'Residuals.fig']);
+end
+
 %% Compare found cost function coefficient values to stored coefficient values
 
 fig_weightretrieval = figure;
@@ -228,6 +244,15 @@ xtickangle(0);
 ylabel('Values of cost function parametrization');
 title({'Investigating the';'cost function parametrization'});
 legend;
+
+% Save the graph
+if scriptParam.SaveGraphs    
+    % Save the graphs in given directory
+    saveas(fig_weightretrieval, [scriptParam.SavePath scriptParam.SavePrefix 'Retrieval' scriptParam.SaveFormat]);
+    
+    % Save the graph in .fig format for eventual later editing
+    saveas(fig_weightretrieval, [scriptParam.SavePathFigs scriptParam.SavePrefix 'Retrieval.fig']); 
+end
 
 %% Check if columns of the matrices are linearly independents
 
@@ -319,6 +344,15 @@ ylabel('R diag elems');
 title({'Sorted diagonal elements of R in'; ' QR decomp of the regressor matrix'});
 legend;
 
+% Save the graph
+if scriptParam.SaveGraphs    
+    % Save the graphs in given directory
+    saveas(fig_sortedconditioning, [scriptParam.SavePath scriptParam.SavePrefix 'CondSorted' scriptParam.SaveFormat]);
+    
+    % Save the graph in .fig format for eventual later editing
+    saveas(fig_sortedconditioning, [scriptParam.SavePathFigs scriptParam.SavePrefix 'CondSorted.fig']); 
+end
+
 %% Plot the unsorted conditioning
 
 % Plot the conditioning
@@ -389,3 +423,12 @@ xtickangle(0);
 ylabel('R diag elems');
 title({'Unsorted diagonal elements of R in'; ' QR decomp of the regressor matrix'});
 legend;
+
+% Save the graph
+if scriptParam.SaveGraphs    
+    % Save the graphs in given directory
+    saveas(fig_unsortedconditioning, [scriptParam.SavePath scriptParam.SavePrefix 'CondUnsorted' scriptParam.SaveFormat]);
+    
+    % Save the graph in .fig format for eventual later editing
+    saveas(fig_unsortedconditioning, [scriptParam.SavePathFigs scriptParam.SavePrefix 'CondUnsorted.fig']); 
+end

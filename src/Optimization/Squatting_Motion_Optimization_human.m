@@ -39,7 +39,7 @@ load ../../data/3DOF/Segmentation/SegmentedTrials.mat
 simParam.GenerateCostAndConstraints = false;
 
 % Give a suffix for the saved data
-simParam.SaveSuffix = 'MinimumTorque_50_ConstraintPoints';
+simParam.SaveSuffix = 'EqualWeights_50_ConstraintPoints';
 
 % Define which trial we should take
 simParam.TrialNumber = 1;
@@ -140,7 +140,7 @@ optParam.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
 %% Cost Function Parametrization:
 
 % Parametrization of the compound cost function
-optParam.CostFunctionWeights = [1 0 0];
+optParam.CostFunctionWeights = [.33 .33 .33];
 
 % Load the normalization data
 load ../../data/3DOF/Optimization-Human/CostFunctionNormalisation.mat

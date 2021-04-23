@@ -20,7 +20,7 @@ else
     disp('Platform not supported')
 end
 
-% Load data
+% Load modelParam variable
 load('../../data/3DOF/Optimization-Human/squat_param.mat');
 
 % Add generated functions to path

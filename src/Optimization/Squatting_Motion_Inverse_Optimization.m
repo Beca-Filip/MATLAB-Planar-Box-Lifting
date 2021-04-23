@@ -2,9 +2,6 @@
 
 %% Import necessary libs and data
 
-% Add the data to path
-addpath("../../data/3DOF/Squat");
-
 % Add model functions
 addpath("../Model"); 
 
@@ -29,13 +26,13 @@ end
 addpath('optimSquattingComputables\');
 
 % Load optimal data
-load_filename = 'MinimumTorque_50_ConstraintPoints';
+load_filename = 'MinimumPower_50_ConstraintPoints';
 load(['../../data/3DOF/Optimization-Human/Storage_' load_filename '.mat']);
 
 %% Create flags and parameters for the running of this script
 
 % Create a flag for saving graphs
-scriptParam.SaveGraphs = true;
+scriptParam.SaveGraphs = false;
 
 % Create a prefix for saving graphs
 scriptParam.SavePrefix = [load_filename '_Full_'];

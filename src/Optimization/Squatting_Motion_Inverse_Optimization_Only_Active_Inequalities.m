@@ -2,9 +2,6 @@ clear all; close all; clc;
 
 %% Import necessary libs and data
 
-% Add the data to path
-addpath("../../data/3DOF/Squat");
-
 % Add model functions
 addpath("../Model"); 
 

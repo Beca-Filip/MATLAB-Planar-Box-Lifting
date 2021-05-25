@@ -103,7 +103,7 @@ y_high = sum(L)+Ltool;
 xlim([x_low, x_high]);
 ylim([y_low, y_high]);
 % Titles and labels
-title('3DOF Planar bot');
+title([num2str(size(q, 1)) 'DOF Planar bot']);
 xlabel('X-axis [m]');
 ylabel('Y-axis [m]');
 grid;

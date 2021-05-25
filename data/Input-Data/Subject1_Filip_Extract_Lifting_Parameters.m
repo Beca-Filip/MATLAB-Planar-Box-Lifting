@@ -1,0 +1,143 @@
+clear all; close all; clc;
+
+% Add model functions to path
+addpath('../../src/Model/');
+
+% Load clean data
+load Subject1_Filip_Clean.mat
+load Subject1_Filip_Segmented_1.mat
+
+% Extract forces
+fnames = fieldnames(Forceplate);
+for ii = 1 : length(fnames)
+    Forceplate.(fnames{ii}) = Forceplate.(fnames{ii})(segmentindices(1):segmentindices(2), :);
+end
+
+% Extract markers
+msetnames = fieldnames(Markers);
+for ii = 1 : length(msetnames)
+    mnames = fieldnames(Markers.(msetnames{ii}));    
+    for jj = 1 : length(mnames)
+        Markers.(msetnames{ii}).(mnames{jj})  = Markers.(msetnames{ii}).(mnames{jj})(segmentindices(1):segmentindices(2), :);
+    end
+end
+
+% Extract angles
+q = q(:, segmentindices(1):segmentindices(2));
+
+% Time vector
+Ts = 0.01;
+Time = 0:Ts:(size(q,2)-1)*Ts;
+
+% Get lengths vector
+L = [param.L1,param.L2,param.L3,param.L4,param.L5,param.L6];
+
+%% Plot all joint profiles
+
+% Joint names
+Joints = {'Ankle', 'Knee', 'Hip', 'Back', 'Shoulder', 'Elbow'};
+
+% How many rows
+figcols = 2;
+figrows = 3;
+
+figure;
+
+for ii = 1 : figrows
+    for jj = 1 : figcols
+        
+        % Current joint/plot
+        curr = jj + (ii-1)*figcols;
+        
+        % Create subplot grid in row major order
+        subplot(figrows, figcols, curr)
+        hold on;
+        
+        % Plot joint profile
+        plot(Time, q(curr,:), 'DisplayName', Joints{curr});
+        
+        % Labels
+        xlabel('Time [s]');
+        ylabel([Joints{curr} ' angle [rad]']);
+        title([Joints{curr} ' joint trajectory']);
+        legend;
+    end
+end
+
+%% Plot Force Profiles
+
+% Forceplate names
+Forcenames = {'X', 'Y' 'Z'};
+
+% How many rows
+figcols = 1;
+figrows = 3;
+
+figure;
+
+for ii = 1 : figrows
+    for jj = 1 : figcols
+        
+        % Current joint/plot
+        curr = jj + (ii-1)*figcols;
+        
+        % Create subplot grid in row major order
+        subplot(figrows, figcols, curr)
+        hold on;
+        
+        % Plot force profile
+        plot(Time, Forceplate.Forces(:,curr), 'DisplayName', Forcenames{curr});
+
+        % Labels
+        xlabel('Time [s]');
+        ylabel([Forcenames{curr} '-Force [N]']);
+        title([Forcenames{curr} '-Force profile']);
+        legend;
+    end
+end
+
+
+%% Plot Z force and height of box
+
+% How many rows
+figcols = 1;
+figrows = 2;
+
+figure;
+
+% subplot(figrows, figcols, 1);
+% plot(Time, Forceplate.Forces(:,3), 'DisplayName', Forcenames{3});
+% xlabel('Time [s]');
+% ylabel([Forcenames{3} '-Force [N]']);
+% title([Forcenames{3} '-Force profile']);
+% legend;
+% 
+% subplot(figrows, figcols, 2)
+% plot(Time, Markers.BOX.FARR(:, 2), 'DisplayName', 'BoxHeight');
+% xlabel('Time [s]');
+% ylabel(['Height [m]']);
+% title(['Box height profile']);
+% legend;
+yyaxis left;
+plot(Time, Forceplate.Forces(:,3), 'DisplayName', Forcenames{3});
+ylabel([Forcenames{3} '-Force [N]']);
+yyaxis right;
+hold on;
+plot(Time, Markers.BOX.FARR(:, 2), 'DisplayName', 'BoxHeight');
+mm = [min(Markers.BOX.FARR(:, 2)), max(Markers.BOX.FARR(:, 2))];
+% plot([Time(362) Time(362)], mm, '--', 'HandleVisibility', 'Off');
+% plot([Time(555) Time(555)], mm, '--', 'HandleVisibility', 'Off');
+plot([Time(362) Time(362)], mm, '--', 'DisplayName', 'LiftOff', 'Color', [1 0 1]);
+plot([Time(555) Time(555)], mm, '--', 'DisplayName', 'DropOff', 'Color', [0.8 0 0.8]);
+ylabel(['Height [m]']);
+legend;
+title('Box height and vertical force profiles');
+
+%% Get graphic input
+ptimes = ginput;
+
+% Indices
+si = floor(ptimes(:, 1) / Ts);
+
+%
+Animate_nDOF(q(:, si(1):si(2)), L, Ts)

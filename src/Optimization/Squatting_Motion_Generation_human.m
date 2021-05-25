@@ -6,7 +6,10 @@ clear all; close all; clc;
 addpath("../Model"); 
 
 % Add the spline functions
-addpath("../../libs/splinePack/");  
+addpath("../../libs/splinePack/");
+
+% Load data
+load ../../data/Input-Data/Subject1_Filip_Segmented.mat
 
 % Add CASADI library
 if ismac                            
@@ -22,20 +25,10 @@ else
     disp('Platform not supported')
 end
 
-% Load model parameters
-load ../../data/3DOF/Optimization-Human/squat_param.mat
-
-% Load segmented kinematic data
-load ../../data/3DOF/Segmentation/SegmentedTrials.mat
-
-%% Define some simulation parameters
-
-% Define which trial to take
-simParam.TrialNumber = 1;
 
 %% Define time related parameters
 % Number of points
-N = size(Trial(simParam.TrialNumber).q, 2);
+N = size(q, 2);
 
 % Sampling rate
 Ts = 0.01;
@@ -47,27 +40,19 @@ t0 = 0;
 tf = (N-1)*Ts;
 
 % Time vector
-t = linspace(t0, tf, N);
+Time = linspace(t0, tf, N);
 
 
 %% Animation
-% Create opts structure for animation
-opts = struct();
 
 % Define segment lengths
-L = [modelParam.L1, modelParam.L2, modelParam.L3];
+L = [modelParam.L1,modelParam.L2,modelParam.L3,modelParam.L4,modelParam.L5,modelParam.L6];
 
 % Define segment relative masses
-M = [modelParam.M1, modelParam.M2, modelParam.M3] / modelParam.Mtot;
+M = [modelParam.M1,modelParam.M2,modelParam.M3,modelParam.M4,modelParam.M5,modelParam.M6] / modelParam.Mtot;
 
 % Define individial segment COM position vectors and place them in a matrix
-C1 = [modelParam.MX1; modelParam.MY1; 0] / modelParam.M1;
-C2 = [modelParam.MX2; modelParam.MY2; 0] / modelParam.M2;
-C3 = [modelParam.MX3; modelParam.MY3; 0] / modelParam.M3;
-CMP = [C1, C2, C3];
-
-% Create a tool option for aesthetics
-opts.tool = struct("type", "circle", "diameter", min(L)*0.25);
+CMP = [modelParam.COM1,modelParam.COM2,modelParam.COM3,modelParam.COM4,modelParam.COM5,modelParam.COM6];
 
 % Create a legend for aesthetics
 opts.generateLegend = true;
@@ -75,20 +60,24 @@ opts.legendParameters = {"Location", "SouthWest"};
 
 %% Artificial squatting motion 
 % Human starting and ending position of squat defined
-q0 = Trial(simParam.TrialNumber).q(:, 1);
-qc = Trial(simParam.TrialNumber).q(:, floor(Trial(simParam.TrialNumber).CrunchTimePercentage * length(Trial(simParam.TrialNumber).q)));
-qf = Trial(simParam.TrialNumber).q(:, end);
+q0 = q(:, 1);
+qlo = q(:, round(LiftParam.PercentageLiftOff * size(q, 2)));
+qdo = q(:, round(LiftParam.PercentageDropOff * size(q, 2)));
+qf = q(:, end);
 
 T0 = FKM_3DOF_Tensor(q0, L);
 Tf = FKM_3DOF_Tensor(qf, L);
 
 % Make linear interpolation
-SamplesToBottom = round(N * Trial(simParam.TrialNumber).CrunchTimePercentage);
-SamplesFromBottom = N - SamplesToBottom;
-q1 = [linspace(q0(1), qc(1), SamplesToBottom), linspace(qc(1), qf(1), SamplesFromBottom)];
-q2 = [linspace(q0(2), qc(2), SamplesToBottom), linspace(qc(2), qf(2), SamplesFromBottom)];
-q3 = [linspace(q0(3), qc(3), SamplesToBottom), linspace(qc(3), qf(3), SamplesFromBottom)];
+TrajSamp_1 = round(LiftParam.PercentageLiftOff * size(q, 2));
+TrajSamp_2 = round((LiftParam.PercentageDropOff - LiftParam.PercentageLiftOff) * size(q, 2));
+TrajSamp_3 = size(q, 2) - round(LiftParam.PercentageDropOff * size(q, 2));
+for ii = 1 : size(q, 1)
+    qi1(ii, :) = linspace(q0(ii), qlo(ii), TrajSamp_1);
+    qi2(ii, :) = linspace(qlo(ii), qdo(ii), TrajSamp_2);
+    qi3(ii, :) = linspace(qdo(ii), qf(ii), TrajSamp_3);
+end
 
-q = [q1;q2;q3];
+qi = [qi1,qi2,qi3];
 
-Animate_3DOF(q, L, Ts, opts);
+Animate_nDOF(qi, L, Ts);

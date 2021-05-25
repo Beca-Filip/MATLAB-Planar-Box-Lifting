@@ -11,20 +11,6 @@ addpath("../../libs/splinePack/");
 % Load data
 load ../../data/Input-Data/Subject1_Filip_Segmented.mat
 
-% Add CASADI library
-if ismac                            
-    % Code to run on Mac platform
-    addpath('../../libs/casadi-osx-matlabR2015a-v3.5.1')
-elseif isunix
-    % Code to run on Linux platform
-    addpath('../../libs/casadi-linux-matlabR2015a-v3.5.1')
-elseif ispc
-    % Code to run on Windows platform
-    addpath('../../libs/casadi-windows-matlabR2016a-v3.5.5')
-else
-    disp('Platform not supported')
-end
-
 
 %% Define time related parameters
 % Number of points

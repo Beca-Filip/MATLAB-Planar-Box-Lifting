@@ -21,16 +21,16 @@ T(4, 4, :, :) = 1;      % Set the homogeneous coordinate
 for ii = 1 : N
     % Compute transformations
     
-    % For first n ones, set the rotation part equal to the rotation of 
+    % For first n joints, set the rotation part equal to the rotation of 
     % the joint angle around the z axis
     for jj = 1 : n
         T(1:3, 1:3, jj, ii) = Rotz(q(jj,ii));
     end
     
-    % For the last one, the rotation part is the identity matrix
+    % For the last joint, the rotation part is the identity matrix
     T(1:3, 1:3, n+1, ii) = eye(3);
     
-    % For the last n ones, set the translation along x to be equal to the
+    % For the last n joints, set the translation along x to be equal to the
     % segment length and then multiply the transformation matrix by the
     % previous one
     for jj = 2 : n+1

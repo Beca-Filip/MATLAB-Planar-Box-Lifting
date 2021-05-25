@@ -5,7 +5,6 @@ addpath('../../src/Model/');
 
 % Load clean data
 load Subject1_Filip_Clean.mat
-load Subject1_Filip_Segmented_1.mat
 
 % Extract forces
 fnames = fieldnames(Forceplate);
@@ -32,6 +31,9 @@ Time = 0:Ts:(size(q,2)-1)*Ts;
 % Get lengths vector
 L = [param.L1,param.L2,param.L3,param.L4,param.L5,param.L6];
 
+% Manually found indices of liftoff
+iLiftOff = 348;
+iDropOff = 526;
 %% Plot all joint profiles
 
 % Joint names
@@ -105,19 +107,6 @@ figrows = 2;
 
 figure;
 
-% subplot(figrows, figcols, 1);
-% plot(Time, Forceplate.Forces(:,3), 'DisplayName', Forcenames{3});
-% xlabel('Time [s]');
-% ylabel([Forcenames{3} '-Force [N]']);
-% title([Forcenames{3} '-Force profile']);
-% legend;
-% 
-% subplot(figrows, figcols, 2)
-% plot(Time, Markers.BOX.FARR(:, 2), 'DisplayName', 'BoxHeight');
-% xlabel('Time [s]');
-% ylabel(['Height [m]']);
-% title(['Box height profile']);
-% legend;
 yyaxis left;
 plot(Time, Forceplate.Forces(:,3), 'DisplayName', Forcenames{3});
 ylabel([Forcenames{3} '-Force [N]']);
@@ -125,19 +114,26 @@ yyaxis right;
 hold on;
 plot(Time, Markers.BOX.FARR(:, 2), 'DisplayName', 'BoxHeight');
 mm = [min(Markers.BOX.FARR(:, 2)), max(Markers.BOX.FARR(:, 2))];
-% plot([Time(362) Time(362)], mm, '--', 'HandleVisibility', 'Off');
-% plot([Time(555) Time(555)], mm, '--', 'HandleVisibility', 'Off');
-plot([Time(362) Time(362)], mm, '--', 'DisplayName', 'LiftOff', 'Color', [1 0 1]);
-plot([Time(555) Time(555)], mm, '--', 'DisplayName', 'DropOff', 'Color', [0.8 0 0.8]);
+plot([Time(iLiftOff) Time(iLiftOff)], mm, '--', 'DisplayName', 'LiftOff', 'Color', [1 0 1]);
+plot([Time(iDropOff) Time(iDropOff)], mm, '--', 'DisplayName', 'DropOff', 'Color', [0.8 0 0.8]);
 ylabel(['Height [m]']);
 legend;
 title('Box height and vertical force profiles');
 
-%% Get graphic input
-ptimes = ginput;
+% %% Get graphic input
+% ptimes = ginput;
+% 
+% % Indices
+% si = floor(ptimes(:, 1) / Ts);
+% % Animate
+% Animate_nDOF(q(:, si(1):si(2)), L, Ts);
 
-% Indices
-si = floor(ptimes(:, 1) / Ts);
+%% Save the data and export lifting parameters
 
-%
-Animate_nDOF(q(:, si(1):si(2)), L, Ts)
+% Lifting parameters
+LiftParam.PercentageLiftOff = iLiftOff / size(q, 2);
+LiftParam.PercentageDropOff = iDropOff / size(q, 2);
+
+% Save
+modelParam = param;
+save('Subject1_Filip_Segmented.mat', 'modelParam', 'q', 'Markers', 'Forceplate', 'LiftParam');

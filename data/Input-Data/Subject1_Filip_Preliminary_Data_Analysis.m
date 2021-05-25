@@ -305,8 +305,20 @@ end
 %% Save into new
 q=qf;
 Forceplate = Forceplate_filt;
-save('Subject1_Filip_Clean.mat', 'q', 'Forceplate', 'Markers', 'param');
 
+inflag = 0;
+while ~inflag
+    in = input('Overwrite segment indices (y/n)?', 's');
+
+    if isequal(lower(in), 'y')
+        save('Subject1_Filip_Clean.mat', 'q', 'Forceplate', 'Markers', 'param', 'segmentindices');
+        inflag = 1;
+    elseif isequal(lower(in), 'n')
+        segmentindices = oldsegmentindices;
+        save('Subject1_Filip_Clean.mat', 'q', 'Forceplate', 'Markers', 'param', 'segmentindices');
+        inflag = 1;
+    end
+end
 %%
 
 

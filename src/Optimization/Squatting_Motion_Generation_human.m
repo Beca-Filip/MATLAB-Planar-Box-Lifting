@@ -66,4 +66,7 @@ end
 
 qi = [qi1,qi2,qi3];
 
-Animate_nDOF(qi, L, Ts);
+opts.bgrPlot = @()plot(LiftParam.WristPositionLiftOff(1), LiftParam.WristPositionLiftOff(2), 'bo', ...
+                       LiftParam.WristPositionDropOff(1), LiftParam.WristPositionDropOff(2), 'ro', 'DisplayName', "Lift'n'Drop");
+
+Animate_nDOF(qi, L, Ts, opts);

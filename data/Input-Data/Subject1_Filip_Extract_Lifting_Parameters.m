@@ -130,11 +130,10 @@ title('Box height and vertical force profiles');
 
 %% Save the data and export lifting parameters
 
-% Lifting parameters
+% Lifting parameters (lift off and drop off)
 LiftParam.PercentageLiftOff = iLiftOff / size(q, 2);
 LiftParam.PercentageDropOff = iDropOff / size(q, 2);
 
-%%
 % Get cartesian position of wrists for lift off
 Twlo = FKM_nDOF_Tensor(q(:, iLiftOff), L);
 Twdo = FKM_nDOF_Tensor(q(:, iDropOff), L);
@@ -143,6 +142,14 @@ LiftParam.WristPositionLiftOff = Twlo(1:3, 4, end);
 LiftParam.WristPositionDropOff = Twdo(1:3, 4, end);
 LiftParam.InitialAngles = q(:, 1);
 LiftParam.FinalAngles = q(:, 2);
+
+% Toe and heel positions
+LiftParam.HeelPosition = mean(Markers.BODY.HEEL(:, 1));
+LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)) + 0.1; % Add 10cm since marker was at 2/3 of the foot length
+
+%% Plot COP
+
+COP = COP_6DOF_Matrix(q,dq,ddq,)
 
 %%
 % Save

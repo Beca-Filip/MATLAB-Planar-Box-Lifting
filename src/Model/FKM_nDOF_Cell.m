@@ -24,8 +24,7 @@ for ii = 1 : N
     % For first n joints, set the rotation part equal to the rotation of 
     % the joint angle around the z axis
     for jj = 1 : n
-        T{jj, ii} = eye(4); % Initialize to 4x4 identity
-        T{jj, ii}(1:3, 1:3) = Rotz(q(jj,ii));
+        T{jj, ii}= [Rotz(q(jj,ii)) [0;0;0]; 0 0 0 1];
     end
     
     % For the last joint

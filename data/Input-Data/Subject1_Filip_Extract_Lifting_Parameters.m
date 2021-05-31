@@ -141,8 +141,13 @@ Twdo = FKM_nDOF_Tensor(q(:, iDropOff), L);
 
 LiftParam.WristPositionLiftOff = Twlo(1:3, 4, end);
 LiftParam.WristPositionDropOff = Twdo(1:3, 4, end);
+LiftParam.InitialAngles = q(:, 1);
+LiftParam.FinalAngles = q(:, 2);
 
 %%
 % Save
 modelParam = param;
+% Add limits
+modelParam.JointLimits = [min(q, [], 2).'; max(q, [], 2).'];
+
 save('Subject1_Filip_Segmented.mat', 'modelParam', 'q', 'Markers', 'Forceplate', 'LiftParam');

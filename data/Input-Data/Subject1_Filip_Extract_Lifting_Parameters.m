@@ -144,12 +144,21 @@ LiftParam.InitialAngles = q(:, 1);
 LiftParam.FinalAngles = q(:, 2);
 
 % Toe and heel positions
-LiftParam.HeelPosition = mean(Markers.BODY.HEEL(:, 1));
-LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)) + 0.1; % Add 10cm since marker was at 2/3 of the foot length
+LiftParam.HeelPosition = mean(Markers.BODY.HEEL(:, 1)-Markers.BODY.ANKLE(:, 1));
+LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)-Markers.BODY.ANKLE(:, 1)) + 0.1; % Add 10cm since marker was at 2/3 of the foot length'
 
-%% Plot COP
+%% Parameters related to the box
+% Box mass
+LiftParam.BoxMass = 10.5;
+% Gravity
+LiftParam.Gravity = 9.81;
 
-COP = COP_6DOF_Matrix(q,dq,ddq,)
+% Center of the box from markers
+BoxCOM = (Markers.BOX.FARR + Markers.BOX.NEAR) / 2;
+% Position vector from the box to the wrist accross time
+BoxToWristVectorDuringLift = Markers.BODY.WRIST(iLiftOff:iDropOff, :) - BoxCOM(iLiftOff:iDropOff, :);
+% Mean of the position vector (Make a column vector)
+LiftParam.BoxToWristVectorDuringLift = mean(BoxToWristVectorDuringLift).';
 
 %%
 % Save

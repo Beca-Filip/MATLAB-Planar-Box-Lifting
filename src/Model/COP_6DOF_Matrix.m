@@ -16,7 +16,7 @@ function COP = COP_6DOF_Matrix(q,dq,ddq,EW,modelParam)
 COP = [...
     EN(6, :) ./ EN(2, :);
     zeros(1, size(EN, 2));
-    EN(1, :) ./ EN(2, :);
+    EN(4, :) ./ EN(2, :);
     ];
 
 end

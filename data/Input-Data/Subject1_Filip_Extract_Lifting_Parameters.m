@@ -128,6 +128,7 @@ title('Box height and vertical force profiles');
 % % Animate
 % Animate_nDOF(q(:, si(1):si(2)), L, Ts);
 
+
 %% Save the data and export lifting parameters
 
 % Lifting parameters (lift off and drop off)
@@ -160,10 +161,102 @@ BoxToWristVectorDuringLift = Markers.BODY.WRIST(iLiftOff:iDropOff, :) - BoxCOM(i
 % Mean of the position vector (Make a column vector)
 LiftParam.BoxToWristVectorDuringLift = mean(BoxToWristVectorDuringLift).';
 
+%% Plot all joint torque profiles
+
+% Vertical gravitational force acting on the box COM, expressed in the 
+% robot base frame
+bF = [0; -LiftParam.BoxMass * LiftParam.Gravity; 0];
+
+% Moment of the gravitational force with respect to the wrist, expressed in
+% the robot base frame
+bM = cross(-LiftParam.BoxToWristVectorDuringLift, bF);
+
+% Get transformation matrices of the wrist joint during the lifting motion
+T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
+Tw = T(end, :);
+
+% Get the force and moment of the gravitational force excerced on the wrist
+% expressed in the wrist frame
+wF = [];
+wM = [];
+
+for ii = 1 : length(Tw)
+    % Add the rotated force vector to the data structure
+    wF = [wF, -Tw{ii}(1:3, 1:3).'*bF];
+    % Add the rotated moment vector to the data structure
+    wM = [wM, -Tw{ii}(1:3, 1:3).'*bM];
+end
+
+% Get the zero external wrenches
+EW = zeroExternalWrenches6DOF(size(q, 2));
+
+% Modify the external wrenches at the end effector
+EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
+
+% Get torques
+dq = diff(q, 1, 2);
+ddq = diff(q, 2, 2);
+dq = [dq dq(:, end)];
+ddq = [ddq ddq(:, end-1:end)];
+[GAMMA, ~] = Dyn_6DOF(q, dq, ddq, param, EW);
+
+% Joint names
+Joints = {'Ankle', 'Knee', 'Hip', 'Back', 'Shoulder', 'Elbow'};
+
+% How many rows
+figcols = 2;
+figrows = 3;
+
+figure;
+
+for ii = 1 : figrows
+    for jj = 1 : figcols
+        
+        % Current joint/plot
+        curr = jj + (ii-1)*figcols;
+        
+        % Create subplot grid in row major order
+        subplot(figrows, figcols, curr)
+        hold on;
+        
+        % Plot joint profile
+        plot(Time, GAMMA(curr,:), 'DisplayName', Joints{curr});
+        
+        mm = [min(GAMMA(curr, :)), max(GAMMA(curr, :))];
+        plot([Time(iLiftOff) Time(iLiftOff)], mm, '--', 'DisplayName', 'LiftOff', 'Color', [1 0 1]);
+        plot([Time(iDropOff) Time(iDropOff)], mm, '--', 'DisplayName', 'DropOff', 'Color', [0.8 0 0.8]);
+        
+        % Labels
+        xlabel('Time [s]');
+        ylabel([Joints{curr} ' torque [Nm]']);
+        title([Joints{curr} ' torque profile']);
+        legend;
+    end
+end
+
+
 %%
 % Save
 modelParam = param;
-% Add limits
-modelParam.JointLimits = [min(q, [], 2).'; max(q, [], 2).'];
+% Add joint limits
+[lb, ub] = expandIntervalByPercentage(10, min(q, [], 2).', max(q, [], 2).');
+modelParam.JointLimits = [lb; ub];
+% Add torque limits
+[lb, ub] = expandIntervalByPercentage(20, min(GAMMA, [], 2).', max(GAMMA, [], 2).');
+modelParam.TorqueLimits = max(abs([lb;ub]));
+% save('Subject1_Filip_Segmented.mat', 'modelParam', 'q', 'Markers', 'Forceplate', 'LiftParam');
 
-save('Subject1_Filip_Segmented.mat', 'modelParam', 'q', 'Markers', 'Forceplate', 'LiftParam');
+%% 
+function [lb, ub] = expandIntervalByPercentage(pc, lb, ub)
+    % get interval width
+    interval_width = ub - lb;
+    % if width <0 fix at 0
+    interval_width(interval_width < 0) = 0;
+    
+    % percentage to multiplier
+    mul = pc / 100;
+    
+    % add to ub and substract from lb
+    lb = lb - mul .* interval_width / 2;
+    ub = ub + mul .* interval_width / 2;
+end

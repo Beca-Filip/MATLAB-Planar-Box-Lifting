@@ -73,25 +73,54 @@ Tlo = FKM_nDOF_Cell(qlo, L);
 % Find the Cartesian configuration of the robot ad lift-off time
 Tdo = FKM_nDOF_Cell(qdo, L);
 
+%% Intermediate Computations: External Wrenches from box lifting
+
+% Vertical gravitational force acting on the box COM, expressed in the 
+% robot base frame
+bF = [0; -liftParam.BoxMass * liftParam.Gravity; 0];
+
+% Moment of the gravitational force with respect to the wrist, expressed in
+% the robot base frame
+bM = cross(-liftParam.BoxToWristVectorDuringLift, bF);
+
+% Get transformation matrices of the wrist joint during the lifting motion
+T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
+Tw = T(end, :);
+
+% Get the force and moment of the gravitational force excerced on the wrist
+% expressed in the wrist frame
+wF = [];
+wM = [];
+
+for ii = 1 : length(Tw)
+    % Add the rotated force vector to the data structure
+    wF = [wF, -Tw{ii}(1:3, 1:3)*bF];
+    % Add the rotated moment vector to the data structure
+    wM = [wM, -Tw{ii}(1:3, 1:3)*bM];
+end
+
+% Get the zero external wrenches
+EW = zeroExternalWrenches6DOF(size(q, 2));
+
+% Modify the external wrenches at the end effector
+EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
+
 %% Intermediate Computation: Position of Center of Pressure
 
-% % Generate the zero external wrenches structure
-% ZEW = zeroExternalWrenches3DOF(size(q, 2));
-% 
-% % Compute the position of the COP 
-% COP = COP_3DOF_Matrix(q,dq,ddq,ZEW,modelParam);
-% 
-% % Take into account only the X coordinate
-% XCOP = COP(1, :);
-% 
-% % Get the thesholds
-% XCOP_high = max(modelParam.HeelPosition(1, 1), modelParam.ToePosition(1, 1));
-% XCOP_low  = min(modelParam.HeelPosition(1, 1), modelParam.ToePosition(1, 1));
+% Compute the position of the COP 
+COP = COP_6DOF_Matrix(q,dq,ddq,modelParam,EW);
+
+% Take into account only the X coordinate
+XCOP = COP(1, :);
+
+% Get the thesholds
+XCOP_high = max(liftParam.HeelPosition, liftParam.ToePosition);
+XCOP_low  = min(liftParam.HeelPosition, liftParam.ToePosition);
 
 %% Intermediate Computation: Joint Torques
 
-% % Compute the joint torques
-% [GAMMA, ~] = Dyn_3DOF(q,dq,ddq,ZEW,modelParam);
+% Compute the joint torques
+[GAMMA, ~] = Dyn_6DOF(q,dq,ddq,modelParam,EW);
 
 %% Initialize description structure
 
@@ -104,23 +133,23 @@ constraintInfo.Equalities = struct([]);
 C = [];
 
 % COP conditions
-% C = [C; (XCOP - XCOP_high)'];
-% C = [C; (-XCOP + XCOP_low)'];
+C = [C; (XCOP - XCOP_high)'];
+C = [C; (-XCOP + XCOP_low)'];
 % % Add to description
-% constraintInfo.Inequalities(2).Description = 'COPConditions';
-% constraintInfo.Inequalities(2).Amount = 2*length(XCOP);
+constraintInfo.Inequalities(1).Description = 'COPConditions';
+constraintInfo.Inequalities(1).Amount = 2*length(XCOP);
 
 
 % Torque Limits
-% C = [C; (GAMMA(1, :)' - modelParam.TorqueLimits(1))];
-% C = [C; (-GAMMA(1, :)' - modelParam.TorqueLimits(1))];
-% C = [C; (GAMMA(2, :)' - modelParam.TorqueLimits(2))];
-% C = [C; (-GAMMA(2, :)' - modelParam.TorqueLimits(2))];
-% C = [C; (GAMMA(3, :)' - modelParam.TorqueLimits(3))];
-% C = [C; (-GAMMA(3, :)' - modelParam.TorqueLimits(3))];
+C = [C; (GAMMA(1, :)' - modelParam.TorqueLimits(1))];
+C = [C; (-GAMMA(1, :)' - modelParam.TorqueLimits(1))];
+C = [C; (GAMMA(2, :)' - modelParam.TorqueLimits(2))];
+C = [C; (-GAMMA(2, :)' - modelParam.TorqueLimits(2))];
+C = [C; (GAMMA(3, :)' - modelParam.TorqueLimits(3))];
+C = [C; (-GAMMA(3, :)' - modelParam.TorqueLimits(3))];
 % Add to description
-% constraintInfo.Inequalities(3).Description = 'TorqueLimits';
-% constraintInfo.Inequalities(3).Amount = 6*length(GAMMA(1, :));
+constraintInfo.Inequalities(2).Description = 'TorqueLimits';
+constraintInfo.Inequalities(2).Amount = 6*length(GAMMA(1, :));
 
 %% Equality constraints
 

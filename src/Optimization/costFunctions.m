@@ -59,19 +59,53 @@ dq = [cell_dq{:}].'; % Merge and transpose so rows correspond to single joint ve
 ddq = [cell_ddq{:}].'; % Merge and transpose so rows correspond to single joint accelerations
 dddq = [cell_dddq{:}].'; % Merge and transpose so rows correspond to single joint jerks
 
+%% Intermediate Computations: External Wrenches from box lifting
+
+% Find the time index where lift off is happening
+iLiftOff = round(Npts * liftParam.PercentageLiftOff);
+% Find the time index where drop off is happening
+iDropOff = round(Npts * liftParam.PercentageDropOff);
+
+% Vertical gravitational force acting on the box COM, expressed in the 
+% robot base frame
+bF = [0; -liftParam.BoxMass * liftParam.Gravity; 0];
+
+% Moment of the gravitational force with respect to the wrist, expressed in
+% the robot base frame
+bM = cross(-liftParam.BoxToWristVectorDuringLift, bF);
+
+% Get transformation matrices of the wrist joint during the lifting motion
+T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
+Tw = T(end, :);
+
+% Get the force and moment of the gravitational force excerced on the wrist
+% expressed in the wrist frame
+wF = [];
+wM = [];
+
+for ii = 1 : length(Tw)
+    % Add the rotated force vector to the data structure
+    wF = [wF, -Tw{ii}(1:3, 1:3)*bF];
+    % Add the rotated moment vector to the data structure
+    wM = [wM, -Tw{ii}(1:3, 1:3)*bM];
+end
+
+% Get the zero external wrenches
+EW = zeroExternalWrenches6DOF(size(q, 2));
+
+% Modify the external wrenches at the end effector
+EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
+
 %% Intermediate Computations: Joint Torques
 
-% % Generate zero external wrenches structure as required by Dyn_3DOF
-% ZEW = zeroExternalWrenches3DOF(itpParam.ItpResolutionCost);
-% 
-% % Get wrenches from Dyn_3DOF
-% [GAMMA, ~] = Dyn_3DOF(q, dq, ddq, ZEW, modelParam);
-% 
-% % Get Joint Torque cost function
-% JT = sum(sum(GAMMA.^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
-% 
-% % #Add to cost function vector
-% J = [J JT];
+% Get wrenches from Dyn_3DOF
+[GAMMA, ~] = Dyn_6DOF(q, dq, ddq, modelParam, EW);
+
+% Get Joint Torque cost function
+JT = sum(sum(GAMMA.^2, 2)) / itpParam.ItpResolutionCost / 3;
+
+% #Add to cost function vector
+J = [J JT];
 
 %% Intermediate Computations: Joint Acceleration
 
@@ -84,17 +118,17 @@ J = [J JA];
 %% Intermediate Computations: Joint Jerk
 
 % Get Joint Jerk cost function
-% JJ = sum(sum(dddq.^2)) / itpParam.ItpResolutionCost / 3;
+JJ = sum(sum(dddq.^2)) / itpParam.ItpResolutionCost / 3;
 
 % #Add to cost function vector
-% J = [J JJ];
+J = [J JJ];
 
 %% Intermediate Computations: Joint Power
 
 % Get Joint Power cost function
-% JP = sum(sum((dq .* GAMMA).^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
+JP = sum(sum((dq .* GAMMA).^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.ItpResolutionCost / 3;
 
 % #Add to cost function vector
-% J = [J JP];
+J = [J JP];
 end
 

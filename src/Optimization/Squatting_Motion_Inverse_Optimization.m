@@ -1,4 +1,4 @@
-    clear all; close all; clc;
+clear all; close all; clc;
 
 %% Import necessary libs and data
 
@@ -23,11 +23,12 @@ else
 end
 
 % Add generated functions to path
-addpath('optimSquattingComputables\');
+addpath('optimizationComputables\');
 
 % Load optimal data
-load_filename = 'MinimumPower_50_ConstraintPoints';
-load(['../../data/3DOF/Optimization-Human/Storage_' load_filename '.mat']);
+% load_filename = 'MinPower_50CP';
+load_filename = 'HumanData';
+load(['../../data/Output-Data/Optimization-Results/OptResults_' load_filename '.mat']);
 
 %% Create flags and parameters for the running of this script
 
@@ -45,29 +46,35 @@ scriptParam.SavePathFigs = '../../data/Produced-Graphs/Inverse-Optimization/matF
 scriptParam.SaveFormat = '.png';
 
 % Create graph outer positions parameter
-scriptParam.GraphOuterPosition = [0 0 1920 1080];
+% scriptParam.GraphOuterPosition = [0 0 1920 1080];
+scriptParam.GraphOuterPosition = [300 300 540 450];
 
 %% Get the cost function and constraint gradient matrices
 
 % Extract optimal solution
-itpParam = Storage.itpParam;
-optParam = Storage.optParam;
-modelParam = Storage.modelParam;
-x_star = Storage.Results.x_star;
+itpParam = OptResults.itpParam;
+optParam = OptResults.optParam;
+modelParam = OptResults.modelParam;
+LiftParam = OptResults.LiftParam;
+x_star = OptResults.Results.x_star;
 
 % Get the cost function and its gradient
-[J_star, dJ_star] = fullify(@(x)costFunctionSet(x), x_star);
+[J_star, dJ_star] = costFunctionSet(x_star);
 
 % Get the nonlinear constraint functions and its gradients
-[C_star, Ceq_star, dC_star, dCeq_star] = fullify(@(x)nonlinearConstr(x), x_star);
+[C_star, Ceq_star, dC_star, dCeq_star] = nonlinearConstr(x_star);
 
 % Get the linear constraint matrices
-[A_star, b_star, Aeq_star, beq_star] = optimGenerateLinearConstraintMatricesSquatting3DOF(itpParam, optParam, modelParam);
+[A_star, b_star, Aeq_star, beq_star] = generateLinearConstraints(itpParam, optParam, modelParam, LiftParam);
 
 % Generate upper and lower bounds
-One = ones(1, itpParam.NumControlPoints);
-lb_doc = [modelParam.JointLimits(1, 1)*One, modelParam.JointLimits(1, 2)*One, modelParam.JointLimits(1, 3)*One];
-ub_doc = [modelParam.JointLimits(2, 1)*One, modelParam.JointLimits(2, 2)*One, modelParam.JointLimits(2, 3)*One];
+Ones = ones(1, itpParam.NumControlPoints);
+lb_doc = [];
+ub_doc = [];
+for ii = 1 : modelParam.NJoints
+    lb_doc = [lb_doc, Ones*modelParam.JointLimits(1, ii)];
+    ub_doc = [ub_doc, Ones*modelParam.JointLimits(2, ii)];
+end
 
 %% Preprocess gradient matrices to prepare them for IOC
 
@@ -266,7 +273,7 @@ end
 [C_sub, ind_C] = licols(C, 1e-3);
 % size(ind_C)
 % Print the residual norm
-fprintf("The residual norm of inverse optimization is %.4f.\n", rn_ioc);
+fprintf("The residual norm of inverse optimization is %.4e.\n", rn_ioc);
 % Check rank of C
 fprintf("The size of the recovery matrix is [%d, %d] while its rank is %d.\n", size(C), rank(C));
 fprintf("The condition number of the recovery matrix is %.4f.\n", cond(C));

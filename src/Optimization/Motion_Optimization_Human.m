@@ -33,10 +33,11 @@ load ../../data/Input-Data/Subject1_Filip_Segmented.mat
 
 % Should we generate all the simulation functions and gradients or can they
 % be loaded
-simParam.GenerateCostAndConstraints = false;
+simParam.GenerateCost = false;
+simParam.GenerateConstraints = false;
 
 % Give a suffix for the saved data
-% simParam.SaveSuffix = 'Feasible_50CP';
+% simParam.SaveSuffix = 'MinPower_50CP';
 
 
 %% Define time related parameters
@@ -121,10 +122,12 @@ optParam.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
 %% Cost Function Parametrization:
 
 % Parametrization of the compound cost function
-optParam.CostFunctionWeights = 1;
+optParam.CostFunctionWeights = [0 0 0 1];
+% optParam.CostFunctionWeights = [0.9032    0.0814    0.0000    0.0154];
 
-CostFunctionNormalisation = 1;
-optParam.CostFunctionNormalisation = CostFunctionNormalisation;
+% CostNormalization = [1 1 1 1];
+load ../../data/Output-Data/Cost-Normalization/CostNormalizationHuman.mat
+optParam.CostFunctionNormalisation = CostNormalization;
 %% Optimization pipeline
 
 % Generate or load linear constraint matrices
@@ -132,37 +135,32 @@ optParam.CostFunctionNormalisation = CostFunctionNormalisation;
 
 
 % Code generation is time consuming, do it only if flag is set
-if simParam.GenerateCostAndConstraints
+if simParam.GenerateConstraints
     % Turn off warnings for code generation
     % MINGW Version not supported
     warning('off','all');
 
     % Generate nonlinear constraint computables
     generateComputableConstraints(itpParam, optParam, modelParam, LiftParam);
+    
+    % Turn on warnings
+    warning('on', 'all');
+end
 
+if simParam.GenerateCost
+    % Turn off warnings for code generation
+    % MINGW Version not supported
+    warning('off','all');
+    
     % Generate cost function computable
     generateComputableCosts(itpParam, optParam, modelParam, LiftParam);
-
+    
     % Turn on warnings
     warning('on', 'all');
 end
 
 % Optimization options
 % With gradient check
-op = optimoptions('fmincon',...   
-                  'Algorithm', 'sqp',...
-                  'Display', 'Iter', ...
-                  'MaxIter', 1e4, ...
-                  'MaxFunctionEvaluations', 2e5, ...
-                  'SpecifyObjectiveGradient', true, ...
-                  'SpecifyConstraintGradient', true,...
-                  'TolFun', 1e-3, ...
-                  'CheckGradients', true, ...
-                  'FiniteDifferenceType', 'Central', ...
-                  'FiniteDifferenceStepSize', 1e-4, ...
-                  'UseParallel', 'Always' ...
-                  );
-% % Without
 % op = optimoptions('fmincon',...   
 %                   'Algorithm', 'sqp',...
 %                   'Display', 'Iter', ...
@@ -171,16 +169,30 @@ op = optimoptions('fmincon',...
 %                   'SpecifyObjectiveGradient', true, ...
 %                   'SpecifyConstraintGradient', true,...
 %                   'TolFun', 1e-3, ...
+%                   'CheckGradients', true, ...
+%                   'FiniteDifferenceType', 'Central', ...
+%                   'FiniteDifferenceStepSize', 1e-4, ...
 %                   'UseParallel', 'Always' ...
 %                   );
+% % Without
+op = optimoptions('fmincon',...   
+                  'Algorithm', 'sqp',...
+                  'Display', 'Iter', ...
+                  'MaxIter', 1e4, ...
+                  'MaxFunctionEvaluations', 2e5, ...
+                  'SpecifyObjectiveGradient', true, ...
+                  'SpecifyConstraintGradient', true,...
+                  'TolFun', 1e-3, ...
+                  'UseParallel', 'Always' ...
+                  );
 
 % Load feasible initial solution
-% ll = q(:, itpParam.KnotIndices).';
-% ll = ll(:).';
-% x0 = ll;
-load('../../data/Output-Data/Optimization-Results/OptResults_Feasible_50CP.mat');
-x0 = OptResults.Results.x_star;
-clear OptResults
+ll = q(:, itpParam.KnotIndices).';
+ll = ll(:).';
+x0 = ll;
+% load('../../data/Output-Data/Optimization-Results/OptResults_Feasible_50CP.mat');
+% x0 = OptResults.Results.x_star;
+% clear OptResults
 
 % Evaluate initial solution
 [J0, dJ0] = costFunctionWrap(x0, optParam);
@@ -302,7 +314,8 @@ opts.legendParameters = {"Location", "SouthWest"};
 
 %% Artificial squatting motion
 
-Animate_nDOF(q_star, L, Ts, opts);
+% Animate_nDOF(q_star, L, Ts, opts);
+Animate_Lifting(q_star,L,Ts,LiftParam);
 
 %% Save the optimization data inside structure
 
@@ -312,6 +325,7 @@ OptResults.lb = lb;
 OptResults.itpParam = itpParam;
 OptResults.modelParam = modelParam;
 OptResults.optParam = optParam;
+OptResults.LiftParam = LiftParam;
 OptResults.Results.x_star = x_star;
 OptResults.Results.f_star = f_star;
 OptResults.Results.ef_star = ef_star;

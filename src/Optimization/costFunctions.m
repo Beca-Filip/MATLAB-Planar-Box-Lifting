@@ -102,7 +102,7 @@ EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - i
 [GAMMA, ~] = Dyn_6DOF(q, dq, ddq, modelParam, EW);
 
 % Get Joint Torque cost function
-JT = sum(sum(GAMMA.^2, 2)) / itpParam.ItpResolutionCost / 3;
+JT = sum(sum((GAMMA ./ modelParam.TorqueLimits.').^2, 2)) / itpParam.ItpResolutionCost / 3;
 
 % #Add to cost function vector
 J = [J JT];

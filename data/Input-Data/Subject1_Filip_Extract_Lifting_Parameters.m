@@ -142,11 +142,55 @@ Twdo = FKM_nDOF_Tensor(q(:, iDropOff), L);
 LiftParam.WristPositionLiftOff = Twlo(1:3, 4, end);
 LiftParam.WristPositionDropOff = Twdo(1:3, 4, end);
 LiftParam.InitialAngles = q(:, 1);
-LiftParam.FinalAngles = q(:, 2);
+LiftParam.FinalAngles = q(:, end);
 
 % Toe and heel positions
 LiftParam.HeelPosition = mean(Markers.BODY.HEEL(:, 1)-Markers.BODY.ANKLE(:, 1));
 LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)-Markers.BODY.ANKLE(:, 1)) + 0.1; % Add 10cm since marker was at 2/3 of the foot length'
+
+%% Draw the box and the table
+
+% Parameters related to the table
+TableUpperNearCorner = mean(Markers.TABLE.NEAR - Markers.BODY.ANKLE);
+TableUpperFarCorner = mean(Markers.TABLE.FARR - Markers.BODY.ANKLE);
+TableLowerNearCorner = TableUpperNearCorner;
+TableLowerNearCorner(2) = 0;
+
+% Table Params
+LiftParam.TableWidth = TableUpperFarCorner(1) - TableUpperNearCorner(1);
+LiftParam.TableHeight = TableUpperNearCorner(2);
+LiftParam.TableLowerNearCorner = TableLowerNearCorner;
+
+% Lower left corner x-y coordinates, then width and height
+TableRectangle=[TableLowerNearCorner(1:2), LiftParam.TableWidth, LiftParam.TableHeight];
+LiftParam.TableRectangle=TableRectangle;
+
+% Box Parameters (From AMAZON product info)
+LiftParam.BoxWidth = 0.33;    % 33cm
+LiftParam.BoxHeight = 0.248;  % 24,8 cm
+
+% Box corners
+BoxLowerFarCorner = Markers.BOX.FARR - Markers.BODY.ANKLE;
+BoxLowerNearCorner = BoxLowerFarCorner;
+BoxLowerNearCorner(:, 1) = BoxLowerNearCorner(:, 1) - LiftParam.BoxWidth;
+
+% Box COM
+BoxCOM = (BoxLowerNearCorner + BoxLowerFarCorner ) / 2 ;
+% Box to wrist vector
+LiftParam.BoxToWristVectorDuringLift = mean((Markers.BODY.WRIST(iLiftOff:iDropOff, :) - Markers.BODY.ANKLE(iLiftOff:iDropOff, :)) - BoxCOM(iLiftOff:iDropOff, :)).';
+% Box Rectangle
+BoxLowerNearCorner = BoxLowerNearCorner(1, :);
+BoxLowerFarCorner = BoxLowerFarCorner(1, :);
+LiftParam.BoxRectangleInitial = [BoxLowerNearCorner(1:2), LiftParam.BoxWidth, LiftParam.BoxHeight];
+% Box Rectangle from box COM
+LiftParam.BoxRectangle=@(BoxCOM)[BoxCOM(:, 1:2)-LiftParam.BoxWidth/2, LiftParam.BoxWidth, LiftParam.BoxHeight];
+% Animation options
+opts.bgrPlot = @()background(TableRectangle); 
+
+opts.handleInits = {@()handle_inits(LiftParam)};
+opts.callback = @(ii, handle) animate_callbacks(ii, handle, iLiftOff, iDropOff, diff(Markers.BODY.WRIST - Markers.BODY.WRIST(iLiftOff, :)));
+% Animate
+Animate_nDOF(q, L, Ts, opts);
 
 %% Parameters related to the box
 % Box mass
@@ -155,11 +199,11 @@ LiftParam.BoxMass = 10.5;
 LiftParam.Gravity = 9.81;
 
 % Center of the box from markers
-BoxCOM = (Markers.BOX.FARR + Markers.BOX.NEAR) / 2;
+% BoxCOM = (Markers.BOX.FARR + BoxLowerNearCorner) / 2;
 % Position vector from the box to the wrist accross time
-BoxToWristVectorDuringLift = Markers.BODY.WRIST(iLiftOff:iDropOff, :) - BoxCOM(iLiftOff:iDropOff, :);
+% BoxToWristVectorDuringLift = Markers.BODY.WRIST(iLiftOff:iDropOff, :) - BoxCOM(iLiftOff:iDropOff, :);
 % Mean of the position vector (Make a column vector)
-LiftParam.BoxToWristVectorDuringLift = mean(BoxToWristVectorDuringLift).';
+% LiftParam.BoxToWristVectorDuringLift = mean(BoxToWristVectorDuringLift).';
 
 %% Plot all joint torque profiles
 
@@ -238,13 +282,23 @@ end
 %%
 % Save
 modelParam = param;
+
 % Add joint limits
 [lb, ub] = expandIntervalByPercentage(10, min(q, [], 2).', max(q, [], 2).');
 modelParam.JointLimits = [lb; ub];
-% Add torque limits
-[lb, ub] = expandIntervalByPercentage(20, min(GAMMA, [], 2).', max(GAMMA, [], 2).');
-modelParam.TorqueLimits = max(abs([lb;ub]));
-% save('Subject1_Filip_Segmented.mat', 'modelParam', 'q', 'Markers', 'Forceplate', 'LiftParam');
+
+% Add torque limits (TAKEN FROM ROBERT 2013)
+
+maxTorque_ANKLE = 2*126; % Double because of symmetry
+maxTorque_KNEE = 2*100; % Double because of symmetry
+maxTorque_HIP = 2*185; % Double because of symmetry
+maxTorque_BACK = 143;   % LUMBAR JOINT in the paper
+maxTorque_SHOULDER = 2*92;    % Double because of symmetry
+maxTorque_ELBOW = 2*77;     % Double because of symmetry
+
+modelParam.TorqueLimits = [maxTorque_ANKLE, maxTorque_KNEE, maxTorque_HIP, maxTorque_BACK, maxTorque_SHOULDER, maxTorque_ELBOW];
+
+save('Subject1_Filip_Segmented.mat', 'modelParam', 'q', 'Markers', 'Forceplate', 'LiftParam');
 
 %% 
 function [lb, ub] = expandIntervalByPercentage(pc, lb, ub)
@@ -259,4 +313,21 @@ function [lb, ub] = expandIntervalByPercentage(pc, lb, ub)
     % add to ub and substract from lb
     lb = lb - mul .* interval_width / 2;
     ub = ub + mul .* interval_width / 2;
+end
+
+% function background(TableRectangle, BoxRectangle)
+function background(TableRectangle)
+rectangle('Position', TableRectangle, 'EdgeColor', [0 0 0]);
+% rectangle('Position', BoxRectangle, 'EdgeColor', [0 0 1]);
+end
+
+function h = handle_inits(LiftParam)
+    h = rectangle('Position', LiftParam.BoxRectangleInitial);
+end
+
+function animate_callbacks(ii, handle, iLiftOff, iDropOff, wristdiff)
+    if ii >= iLiftOff && ii <= iDropOff
+        handle.Position(1:2) = handle.Position(1:2) + wristdiff(ii, 1:2);
+%         handle.Position(1:2) = LiftParam.BoxRectangle(1:2) + wristdiff(ii, 1:2);
+    end
 end

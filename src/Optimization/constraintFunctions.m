@@ -155,8 +155,6 @@ constraintInfo.Inequalities(2).Amount = 6*length(GAMMA(1, :));
 
 Ceq = [];
 % Lift Off conditions ( along X and Y axis )
-disp(size(Tlo{end, 1}))
-disp(size(Tdo{end, 1}))
 Ceq = [Ceq; Tlo{end, 1}(1, 4) - liftParam.WristPositionLiftOff(1)];
 Ceq = [Ceq; Tlo{end, 1}(2, 4) - liftParam.WristPositionLiftOff(2)];
 

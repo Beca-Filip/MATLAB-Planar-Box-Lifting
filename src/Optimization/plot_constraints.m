@@ -1,12 +1,14 @@
-function plot_constraints(x,A,b,Aeq,beq,optimoptions)
+
+function plot_constraints(x,itpParam,modelParam,liftParam,optParam,optimoptions)
 %PLOT_CONSTRAINTS plots all the constraints of the problem that are passed.
 %
 %   PLOT_CONSTRAINTS(x,A,b,Aeq,beq)
 
 % Compute nonlinear constraints
-[C,Ceq,~,~] = nonlinearConstr(x);
-C=full(C);
-Ceq=full(Ceq);
+[C, Ceq, constraintInfoNL] = constraintFunctions(x, itpParam,modelParam,liftParam);
+
+% Generate linear matrices
+[A,b,Aeq,beq] = generateLinearConstraints(itpParam,optParam,modelParam,liftParam);
 
 % Compute linear constraints
 LC = A*x'-b;
@@ -22,7 +24,17 @@ if ~isequal(C, [])
         linear = 1:length(C);
         One = ones(1, length(C));
         plot(linear, One*optimoptions.ConstraintTolerance, '-', 'Color', [0.3 1 0.3], 'DisplayName', 'UpTol');
-    end    
+    end
+    % Plot constraint names
+    sum = 0;
+    numtypes = length(constraintInfoNL.Inequalities);
+    for ii = 1 : numtypes
+        xpos = sum+constraintInfoNL.Inequalities(ii).Amount * ones(1, 2);
+        ypos = [min(C), optimoptions.ConstraintTolerance];
+        plot(xpos, ypos, 'r--', 'HandleVisibility', 'Off');
+        text(sum+1, optimoptions.ConstraintTolerance, constraintInfoNL.Inequalities(ii).Description);
+        sum = sum + constraintInfoNL.Inequalities(ii).Amount;
+    end
     xlabel('Constraint order');
     ylabel('Constraint value');
     legend;
@@ -41,7 +53,17 @@ if ~isequal(Ceq, [])
         One = ones(1, length(Ceq));
         plot(linear, One*optimoptions.ConstraintTolerance, '-', 'Color', [0.3 1 0.3], 'DisplayName', 'UpTol');
         plot(linear, -One*optimoptions.ConstraintTolerance, '-', 'Color', [0.3 0.1 0.3], 'DisplayName', 'LoTol');
-    end    
+    end
+    % Plot constraint names
+    sum = 0;
+    numtypes = length(constraintInfoNL.Equalities);
+    for ii = 1 : numtypes
+        xpos = sum+constraintInfoNL.Equalities(ii).Amount * ones(1, 2);
+        ypos = [-optimoptions.ConstraintTolerance, optimoptions.ConstraintTolerance];
+        plot(xpos, ypos, 'r--', 'HandleVisibility', 'Off');
+        text(sum+1, optimoptions.ConstraintTolerance, constraintInfoNL.Equalities(ii).Description);
+        sum = sum + constraintInfoNL.Inequalities(ii).Amount;
+    end
     xlabel('Constraint order');
     ylabel('Constraint value');
     legend;
@@ -64,7 +86,7 @@ if ~isequal(LC, [])
     ylabel('Constraint value');
     legend;
     grid;
-    title('Linear equality');
+    title('Linear inequality');
 end
 
 % Linear equality constraints
@@ -83,7 +105,7 @@ if ~isequal(LCeq, [])
     ylabel('Constraint value');
     legend;
     grid;
-    title('Linear inequality');
+    title('Linear equality');
 end
 
 end

@@ -28,7 +28,10 @@ if ~exist('optimizationComputables', 'dir')
     mkdir optimizationComputables
 end
 
+
 % Change directory
+mkdir optimizationComputables
+
 cd('optimizationComputables\');
 
 % Generate a c file

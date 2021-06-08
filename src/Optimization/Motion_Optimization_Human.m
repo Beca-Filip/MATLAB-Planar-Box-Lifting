@@ -37,8 +37,8 @@ simParam.GenerateCost = false;
 simParam.GenerateConstraints = false;
 
 % Give a suffix for the saved data
-% simParam.SaveSuffix = 'MinPower_50CP';
-
+% simParam.SaveSuffix = 'MinTorque_50CP';
+optParam.CostFunctionWeights = [0 1 0 0];
 
 %% Define time related parameters
 % Number of points
@@ -122,7 +122,7 @@ optParam.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
 %% Cost Function Parametrization:
 
 % Parametrization of the compound cost function
-optParam.CostFunctionWeights = [0 0 0 1];
+% optParam.CostFunctionWeights = [0 0 0 0];
 % optParam.CostFunctionWeights = [0.9032    0.0814    0.0000    0.0154];
 
 % CostNormalization = [1 1 1 1];

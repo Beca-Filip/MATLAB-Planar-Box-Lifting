@@ -13,6 +13,44 @@ AppendixFlags.PowersSquared = false;
 AppendixFlags.VisualComparison = false;
 AppendixFlags.NumericalComparison = true;
 
+%% Get the time vector with the number of points desired and re-generate trajectories
+
+% Time
+Time = linspace(t0, tf, itpParam.ItpResolutionCost);
+
+% Extract knots of individual joints
+q_knots_star = cell(1, NJ);
+for ii = 1 : NJ
+    q_knots_star{ii} = x_star(1 + (ii-1) * Ncp : ii * Ncp);
+end
+
+% Get spline coeffs
+polycoeffs_star = cell(1, NJ);
+for ii = 1 : NJ
+    polycoeffs_star{ii}  = splineInterpolation2(Tknots, q_knots_star{ii}, ItpOrder, BndCnd);
+end
+
+% Get trajectories, velocities, accelerations, and jerks and separate them
+q_tva = cell(1, NJ);
+cell_q_star = cell(1, NJ);
+cell_dq_star = cell(1, NJ);
+cell_ddq_star = cell(1, NJ);
+cell_dddq_star = cell(1, NJ);
+
+for ii = 1 : NJ
+    q_tva{ii} = splineCoefToTrajectory(Tknots, polycoeffs_star{ii}, Time, 3);
+    cell_q_star{ii} = q_tva{ii}(1, :).'; % Transpose for later
+    cell_dq_star{ii} = q_tva{ii}(2, :).'; % Transpose for later
+    cell_ddq_star{ii} = q_tva{ii}(3, :).'; % Transpose for later 
+    cell_dddq_star{ii} = q_tva{ii}(4, :).'; % Transpose for later    
+end
+
+% Merge trajectories velocities and accelerations into one matrix
+q_star = [cell_q_star{:}].'; % Merge and transpose so rows correspond to single joint trajectories
+dq_star = [cell_dq_star{:}].'; % Merge and transpose so rows correspond to single joint velocities
+ddq_star = [cell_ddq_star{:}].'; % Merge and transpose so rows correspond to single joint accelerations
+dddq_star = [cell_dddq_star{:}].'; % Merge and transpose so rows correspond to single joint jerks
+
 %% Get human trajectories and compate with optimal ones
 
 % Human knots
@@ -91,11 +129,12 @@ end
 %% Calculate Torques for Human Trajectories and Compare with Optimal Trajectories
 
 % Get the external wrenches object
-EW = getExternalWrenches(q,L,LiftParam);
+EW_star = getExternalWrenches(q_star,L,LiftParam);
+EW_human = getExternalWrenches(q_human,L,LiftParam);
 
 % Calculate the dynamics for the optimal and human trajectories
-[GAMMA_star, EN_star] = Dyn_6DOF(q_star, dq_star, ddq_star, modelParam, EW);
-[GAMMA_human, EN_human] = Dyn_6DOF(q_human, dq_human, ddq_human, modelParam, EW);
+[GAMMA_star, EN_star] = Dyn_6DOF(q_star, dq_star, ddq_star, modelParam, EW_star);
+[GAMMA_human, EN_human] = Dyn_6DOF(q_human, dq_human, ddq_human, modelParam, EW_human);
 
 % Joint names
 Joints = {'Ankle', 'Knee', 'Hip', 'Back', 'Shoulder', 'Elbow'};

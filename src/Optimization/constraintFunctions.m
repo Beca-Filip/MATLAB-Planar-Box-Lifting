@@ -59,51 +59,95 @@ ddq = [cell_ddq{:}].'; % Merge and transpose so rows correspond to single joint 
 %% Intermediate Computations: Lift Off and Drop Off wrist cartesian positions
 
 % Find the time index where lift off is happening
-iLiftOff = round(Npts * liftParam.PercentageLiftOff);
+timeLiftOff = round(itpParam.KnotIndices(end) * liftParam.PercentageLiftOff) * 0.01;
 % Find the time index where drop off is happening
-iDropOff = round(Npts * liftParam.PercentageDropOff);
+timeDropOff = round(itpParam.KnotIndices(end) * liftParam.PercentageDropOff) * 0.01;
 
 % Get the joint angles at lift off time
-qlo = q(:, iLiftOff);
+qLiftOff = [];
+for ii = 1 : NJ
+    qLiftOff = [qLiftOff; splineCoefToTrajectory(Tknots, polycoeffs{ii}, timeLiftOff, 0)];
+end
 % Get the joint angles at drop off time
-qdo = q(:, iDropOff);
+qDropOff = [];
+for ii = 1 : NJ
+    qDropOff = [qDropOff; splineCoefToTrajectory(Tknots, polycoeffs{ii}, timeDropOff, 0)];
+end
+% disp(size(qLiftOff))
+% disp(size(qDropOff))
+
+% % Find the time index where lift off is happening
+% iLiftOff = round(Npts * liftParam.PercentageLiftOff);
+% % Find the time index where drop off is happening
+% iDropOff = round(Npts * liftParam.PercentageDropOff);
+% 
+% qLiftOff = q(:, iLiftOff);
+% qDropOff = q(:, iDropOff);
 
 % Find the Cartesian configuration of the robot ad lift-off time
-Tlo = FKM_nDOF_Cell(qlo, L);
+Tlo = FKM_nDOF_Cell(qLiftOff, L);
 % Find the Cartesian configuration of the robot ad lift-off time
-Tdo = FKM_nDOF_Cell(qdo, L);
+Tdo = FKM_nDOF_Cell(qDropOff, L);
 
 %% Intermediate Computations: External Wrenches from box lifting
 
-% Vertical gravitational force acting on the box COM, expressed in the 
-% robot base frame
-bF = [0; -liftParam.BoxMass * liftParam.Gravity; 0];
+% % Vertical gravitational force acting on the box COM, expressed in the 
+% % robot base frame
+% bF = [0; -liftParam.BoxMass * liftParam.Gravity; 0];
+% 
+% % Moment of the gravitational force with respect to the wrist, expressed in
+% % the robot base frame
+% bM = cross(-liftParam.BoxToWristVectorDuringLift, bF);
+% 
+% % Get transformation matrices of the wrist joint during the lifting motion
+% T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
+% Tw = T(end, :);
+% 
+% % Get the force and moment of the gravitational force excerced on the wrist
+% % expressed in the wrist frame
+% wF = [];
+% wM = [];
+% 
+% for ii = 1 : length(Tw)
+%     % Add the rotated force vector to the data structure
+%     wF = [wF, -Tw{ii}(1:3, 1:3)*bF];
+%     % Add the rotated moment vector to the data structure
+%     wM = [wM, -Tw{ii}(1:3, 1:3)*bM];
+% end
+% 
+% % Get the zero external wrenches
+% EW = zeroExternalWrenches6DOF(size(q, 2));
+% 
+% % Modify the external wrenches at the end effector
+% EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
 
-% Moment of the gravitational force with respect to the wrist, expressed in
-% the robot base frame
-bM = cross(-liftParam.BoxToWristVectorDuringLift, bF);
+EW = getExternalWrenches(q,L,liftParam);
+
+%% Box doesnt intersect with table
+
+% Find the time index where lift off is happening
+iLiftOff = round(Npts * liftParam.PercentageLiftOff);
+% Find the time index where drop off is happening
+iDropOff = round(Npts * liftParam.PercentageDropOff);
 
 % Get transformation matrices of the wrist joint during the lifting motion
 T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
 Tw = T(end, :);
 
-% Get the force and moment of the gravitational force excerced on the wrist
-% expressed in the wrist frame
-wF = [];
-wM = [];
-
-for ii = 1 : length(Tw)
-    % Add the rotated force vector to the data structure
-    wF = [wF, -Tw{ii}(1:3, 1:3)*bF];
-    % Add the rotated moment vector to the data structure
-    wM = [wM, -Tw{ii}(1:3, 1:3)*bM];
+% BoxCorner from wrist FKM
+BoxFarLowerCorner = cell(1, size(Tw, 2));
+for ii = 1 : size(Tw, 2)
+    % WristPos + WristToBoxCOM + HalfOfBoxWidthToTheRight
+    BoxFarLowerCorner{ii} = Tw{ii}(1:3, 4) - liftParam.BoxToWristVectorDuringLift + [liftParam.BoxWidth/2;0;0];
 end
 
-% Get the zero external wrenches
-EW = zeroExternalWrenches6DOF(size(q, 2));
-
-% Modify the external wrenches at the end effector
-EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
+% Constraint
+CollisionC = [];
+for ii = 1 : size(BoxFarLowerCorner, 2)
+    CollisionC = [CollisionC;
+    (BoxFarLowerCorner{ii}(1) - liftParam.TableLowerNearCorner(1)) * (BoxFarLowerCorner{ii}(2) <= liftParam.TableHeight)   % Box_x <= Table_x iff Box_y <= Table_y
+    ];
+end
 
 %% Intermediate Computation: Position of Center of Pressure
 
@@ -150,6 +194,13 @@ C = [C; (-GAMMA(3, :)' - modelParam.TorqueLimits(3))];
 % Add to description
 constraintInfo.Inequalities(2).Description = 'TorqueLimits';
 constraintInfo.Inequalities(2).Amount = 6*length(GAMMA(1, :));
+
+
+% Collision constraints
+C = [C; CollisionC];
+% Add to description
+constraintInfo.Inequalities(3).Description = 'CollisionConstraints';
+constraintInfo.Inequalities(3).Amount = length(CollisionC);
 
 %% Equality constraints
 

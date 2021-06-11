@@ -2,10 +2,14 @@
 function plot_constraints(x,itpParam,modelParam,liftParam,optParam,optimoptions)
 %PLOT_CONSTRAINTS plots all the constraints of the problem that are passed.
 %
-%   PLOT_CONSTRAINTS(x,A,b,Aeq,beq)
+%   PLOT_CONSTRAINTS(x,itpParam,modelParam,liftParam,optParam,optimoptions)
 
 % Compute nonlinear constraints
 [C, Ceq, constraintInfoNL] = constraintFunctions(x, itpParam,modelParam,liftParam);
+
+% Apply multipliers to constraints
+C = constraintsApplyMultipliersForTolerance(C, constraintInfoNL.Inequalities, optParam);
+Ceq = constraintsApplyMultipliersForTolerance(Ceq, constraintInfoNL.Equalities, optParam);
 
 % Generate linear matrices
 [A,b,Aeq,beq] = generateLinearConstraints(itpParam,optParam,modelParam,liftParam);
@@ -19,20 +23,25 @@ if ~isequal(C, [])
     figure;
     hold on;
     plot(C, 'DisplayName', 'NLC');
+    
     % Plot tolerance if passed
+    linear = 1:length(C);
     if ~isequal(optimoptions, [])
-        linear = 1:length(C);
         One = ones(1, length(C));
-        plot(linear, One*optimoptions.ConstraintTolerance, '-', 'Color', [0.3 1 0.3], 'DisplayName', 'UpTol');
+        plot(linear, One*optimoptions.ConstraintTolerance, '--', 'Color', [0 0 0], 'DisplayName', 'UpTol');
     end
+    
+    % Plot active constraints
+    plot(linear(C > optimoptions.ConstraintTolerance), C(C > optimoptions.ConstraintTolerance), 'ro', 'DisplayName', 'Active');
+    
     % Plot constraint names
     sum = 0;
     numtypes = length(constraintInfoNL.Inequalities);
     for ii = 1 : numtypes
-        xpos = sum+constraintInfoNL.Inequalities(ii).Amount * ones(1, 2);
-        ypos = [min(C), optimoptions.ConstraintTolerance];
+        xpos = (sum+constraintInfoNL.Inequalities(ii).Amount) * ones(1, 2);
+        ypos = [min(C), max(max(C), optimoptions.ConstraintTolerance)];
         plot(xpos, ypos, 'r--', 'HandleVisibility', 'Off');
-        text(sum+1, optimoptions.ConstraintTolerance, constraintInfoNL.Inequalities(ii).Description);
+        text(sum+1, optimoptions.ConstraintTolerance-0.1*diff(ypos), constraintInfoNL.Inequalities(ii).Description);
         sum = sum + constraintInfoNL.Inequalities(ii).Amount;
     end
     xlabel('Constraint order');
@@ -47,22 +56,27 @@ if ~isequal(Ceq, [])
     figure;
     hold on;
     plot(Ceq, 'DisplayName', 'NLCeq');
+    
     % Plot tolerance if passed
+    linear = 1:length(Ceq);
     if ~isequal(optimoptions, [])
-        linear = 1:length(Ceq);
         One = ones(1, length(Ceq));
-        plot(linear, One*optimoptions.ConstraintTolerance, '-', 'Color', [0.3 1 0.3], 'DisplayName', 'UpTol');
-        plot(linear, -One*optimoptions.ConstraintTolerance, '-', 'Color', [0.3 0.1 0.3], 'DisplayName', 'LoTol');
+        plot(linear, One*optimoptions.ConstraintTolerance, '--', 'Color', [0 0 0], 'DisplayName', 'UpTol');
+        plot(linear, -One*optimoptions.ConstraintTolerance, '--', 'Color', [0 0 0], 'DisplayName', 'LoTol');
     end
-    % Plot constraint names
+    
+    % Plot active constraints
+    plot(linear(Ceq > optimoptions.ConstraintTolerance | Ceq < -optimoptions.ConstraintTolerance), ...
+         Ceq(Ceq > optimoptions.ConstraintTolerance | Ceq < -optimoptions.ConstraintTolerance), 'ro', 'DisplayName', 'Active');
+     
     sum = 0;
     numtypes = length(constraintInfoNL.Equalities);
     for ii = 1 : numtypes
-        xpos = sum+constraintInfoNL.Equalities(ii).Amount * ones(1, 2);
-        ypos = [-optimoptions.ConstraintTolerance, optimoptions.ConstraintTolerance];
+        xpos = (sum+constraintInfoNL.Equalities(ii).Amount) * ones(1, 2);
+        ypos = [min(min(Ceq), -optimoptions.ConstraintTolerance), max(max(Ceq), optimoptions.ConstraintTolerance)];
         plot(xpos, ypos, 'r--', 'HandleVisibility', 'Off');
-        text(sum+1, optimoptions.ConstraintTolerance, constraintInfoNL.Equalities(ii).Description);
-        sum = sum + constraintInfoNL.Inequalities(ii).Amount;
+        text(sum+1, optimoptions.ConstraintTolerance-0.1*diff(ypos), constraintInfoNL.Equalities(ii).Description);
+        sum = sum + constraintInfoNL.Equalities(ii).Amount;
     end
     xlabel('Constraint order');
     ylabel('Constraint value');

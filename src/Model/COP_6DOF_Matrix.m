@@ -1,4 +1,4 @@
-function COP = COP_6DOF_Matrix(q,dq,ddq,EW,modelParam)
+function COP = COP_6DOF_Matrix(q,dq,ddq,modelParam,EW)
 %COP_6DOF_MATRIX uses the Inverse Dynamics Model in Dyn_6DOF to calculate
 %the position of the CoP.
 %
@@ -7,7 +7,7 @@ function COP = COP_6DOF_Matrix(q,dq,ddq,EW,modelParam)
 
 % Calculate the wrenches at the base of the robot with the inverse dynamics
 % model
-[~, EN] = Dyn_6DOF(q,dq,ddq,EW,modelParam);
+[~, EN] = Dyn_6DOF(q,dq,ddq,modelParam,EW);
 
 % Get the position of the COP
 % COPx = Mz / Fy

@@ -129,25 +129,6 @@ title('Box height and vertical force profiles');
 % Animate_nDOF(q(:, si(1):si(2)), L, Ts);
 
 
-%% Save the data and export lifting parameters
-
-% Lifting parameters (lift off and drop off)
-LiftParam.PercentageLiftOff = iLiftOff / size(q, 2);
-LiftParam.PercentageDropOff = iDropOff / size(q, 2);
-
-% Get cartesian position of wrists for lift off
-Twlo = FKM_nDOF_Tensor(q(:, iLiftOff), L);
-Twdo = FKM_nDOF_Tensor(q(:, iDropOff), L);
-
-LiftParam.WristPositionLiftOff = Twlo(1:3, 4, end);
-LiftParam.WristPositionDropOff = Twdo(1:3, 4, end);
-LiftParam.InitialAngles = q(:, 1);
-LiftParam.FinalAngles = q(:, end);
-
-% Toe and heel positions
-LiftParam.HeelPosition = mean(Markers.BODY.HEEL(:, 1)-Markers.BODY.ANKLE(:, 1));
-LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)-Markers.BODY.ANKLE(:, 1)) + 0.1; % Add 10cm since marker was at 2/3 of the foot length'
-
 %% Draw the box and the table
 
 % Parameters related to the table
@@ -158,7 +139,7 @@ TableLowerNearCorner(2) = 0;
 
 % Table Params
 LiftParam.TableWidth = TableUpperFarCorner(1) - TableUpperNearCorner(1);
-LiftParam.TableHeight = TableUpperNearCorner(2);
+LiftParam.TableHeight = TableUpperNearCorner(2)-0.02;
 LiftParam.TableLowerNearCorner = TableLowerNearCorner;
 
 % Lower left corner x-y coordinates, then width and height
@@ -197,13 +178,6 @@ Animate_nDOF(q, L, Ts, opts);
 LiftParam.BoxMass = 10.5;
 % Gravity
 LiftParam.Gravity = 9.81;
-
-% Center of the box from markers
-% BoxCOM = (Markers.BOX.FARR + BoxLowerNearCorner) / 2;
-% Position vector from the box to the wrist accross time
-% BoxToWristVectorDuringLift = Markers.BODY.WRIST(iLiftOff:iDropOff, :) - BoxCOM(iLiftOff:iDropOff, :);
-% Mean of the position vector (Make a column vector)
-% LiftParam.BoxToWristVectorDuringLift = mean(BoxToWristVectorDuringLift).';
 
 %% Plot all joint torque profiles
 
@@ -279,9 +253,37 @@ for ii = 1 : figrows
 end
 
 
+%% Save the data and export lifting parameters
+
+% Lifting parameters (lift off and drop off)
+LiftParam.PercentageLiftOff = iLiftOff / size(q, 2);
+LiftParam.PercentageDropOff = iDropOff / size(q, 2);
+
+% Get cartesian position of wrists for lift off
+Twlo = FKM_nDOF_Tensor(q(:, iLiftOff), L);
+Twdo = FKM_nDOF_Tensor(q(:, iDropOff), L);
+
+LiftParam.WristPositionLiftOff = Twlo(1:3, 4, end);
+LiftParam.WristPositionDropOff = Twdo(1:3, 4, end);
+LiftParam.InitialAngles = q(:, 1);
+LiftParam.FinalAngles = q(:, end);
+
+%% COP related parameters
+
+% Get COP 
+COP = COP_6DOF_Matrix(q,dq,ddq,param,EW);
+
+% Toe and heel positions
+LiftParam.HeelPosition = mean(Markers.BODY.HEEL(:, 1)-Markers.BODY.ANKLE(:, 1));
+LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)-Markers.BODY.ANKLE(:, 1)) + 0.1; % Add 10cm since marker was at 2/3 of the foot length'
+LiftParam.ToePosition = max(COP(1, :)) + 0.01;  % Add 1cm
+
 %%
 % Save
 modelParam = param;
+
+% Add number of joints
+modelParam.NJoints = 6;
 
 % Add joint limits
 [lb, ub] = expandIntervalByPercentage(10, min(q, [], 2).', max(q, [], 2).');

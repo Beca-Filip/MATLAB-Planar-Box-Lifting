@@ -37,8 +37,8 @@ simParam.GenerateCost = false;
 simParam.GenerateConstraints = false;
 
 % Give a suffix for the saved data
-% simParam.SaveSuffix = 'MinTorque_50CP';
-optParam.CostFunctionWeights = [0 1 0 0];
+% simParam.SaveSuffix = 'MinPower_50CP';
+optParam.CostFunctionWeights = [0 0 0 1];
 
 %% Define time related parameters
 % Number of points
@@ -60,7 +60,7 @@ Time = linspace(t0, tf, N);
 
 % Create a structure containing interpolation parameters
 % Number of knots (Must be an odd number because of the way we form the initial solution)
-itpParam.NumControlPoints = 15;
+itpParam.NumControlPoints = 17;
 
 % Spline Knot Indices
 itpParam.KnotIndices = floor(linspace(1, N, itpParam.NumControlPoints));
@@ -104,11 +104,11 @@ TolFinalConditions = 1e-3;
 optParam.MulFinalConditions = DefaultConstraintTolerance / TolFinalConditions;
 
 % Wrist Lift Off condition tolerances
-TolWristPositionLiftOff = 1e-2;
+TolWristPositionLiftOff = 1e-3;
 optParam.MulWristPositionLiftOff = DefaultConstraintTolerance / TolWristPositionLiftOff;
 
 % Wrist Drop off condition tolerances
-TolWristPositionDropOff = 1e-2;
+TolWristPositionDropOff = 1e-3;
 optParam.MulWristPositionDropOff = DefaultConstraintTolerance / TolWristPositionDropOff;
 
 % Center of Pressure within bounds constraints
@@ -119,11 +119,21 @@ optParam.MulCOPConditions = DefaultConstraintTolerance / TolCOPConditions;
 TolTorqueLimits = 1e-3;
 optParam.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
 
+% Collision constraints
+TolCollisionConstraints = 1e-2;
+optParam.MulCollisionConstraints = DefaultConstraintTolerance / TolCollisionConstraints;
+
 %% Cost Function Parametrization:
 
 % Parametrization of the compound cost function
 % optParam.CostFunctionWeights = [0 0 0 0];
 % optParam.CostFunctionWeights = [0.9032    0.0814    0.0000    0.0154];
+
+% If we're re-generating the model, please don't forget to normalize the
+% cost functions
+if simParam.GenerateCost || simParam.GenerateConstraints
+    costFunctionNormalizationScript_human;
+end
 
 % CostNormalization = [1 1 1 1];
 load ../../data/Output-Data/Cost-Normalization/CostNormalizationHuman.mat
@@ -187,12 +197,12 @@ op = optimoptions('fmincon',...
                   );
 
 % Load feasible initial solution
-ll = q(:, itpParam.KnotIndices).';
-ll = ll(:).';
-x0 = ll;
-% load('../../data/Output-Data/Optimization-Results/OptResults_Feasible_50CP.mat');
-% x0 = OptResults.Results.x_star;
-% clear OptResults
+% ll = q(:, itpParam.KnotIndices).';
+% ll = ll(:).';
+% x0 = ll;
+load('../../data/Output-Data/Optimization-Results/OptResults_Feasible_50CP.mat');
+x0 = OptResults.Results.x_star;
+clear OptResults
 
 % Evaluate initial solution
 [J0, dJ0] = costFunctionWrap(x0, optParam);

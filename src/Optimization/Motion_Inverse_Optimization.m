@@ -26,7 +26,7 @@ end
 addpath('optimizationComputables\');
 
 % Load optimal data
-load_filename = 'MinAcceleration_50CP';
+load_filename = 'MinPower_50CP';
 % load_filename = 'HumanData';
 load(['../../data/Output-Data/Optimization-Results/OptResults_' load_filename '.mat']);
 

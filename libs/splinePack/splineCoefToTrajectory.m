@@ -63,44 +63,58 @@ j = 2;
 % Initialize output
 f = [];
 
-% Until all knots or input samples have been processed
-while j <= n && i <= m
-    
-    % If current sample is at a time lesser than the current knot, go to
-    % the next sample
-    if (x(i) <= knots(j))
-        i = i + 1;
-    % As soon as it passes the current knot, calculate the values of the
-    % samples inbetween the previous remembered position inside the input
-    % vector and the current position
-    elseif (i - prev_i > 0)
-        % Calculate trajectories and derivative values
-        [q, der_q] = polyCoefToTrajectory4(coefs(p * (j-2) + 1 : p * (j-1)), x(prev_i : i - 1), order);
-        % Store it in output structure
-        f = [f, [q; der_q]];
-        % Update previous remembered position to the current value
-        prev_i = i;
-        % Update current knot position
-        j = j + 1;
-    % If there are no samples in between then just update the knot value
-    else        
-        j = j + 1;
-    end
+% For all knots before last knot
+for jj = 2:n+1
+    % All timesamples less than current knot
+    [q, q_der] = polyCoefToTrajectory4(coefs((jj-2)*p+1:(jj-1)*p), x(x >= knots(jj-1) & x < knots(jj)), order);
+    % Add to output
+    f = [f, [q; q_der]];
 end
 
+% For all knots after last knot
+% All timesamples less than current knot
+[q, q_der] = polyCoefToTrajectory4(coefs((n-1)*p+1:n*p), x(x >= knots(n+1)), order);
+% Add to output
+f = [f, [q; q_der]];
 
-% If all samples have been processed return
-if i == m + 1
-    return
-% Else if all knots have been processed (except the last one) and not all
-% samples have been processed, process the rest of the samples according to
-% last polynomial coefficients.
-elseif j == n + 1
-    % Calculate values and derivatives for rest of the samples
-    [q, der_q] = polyCoefToTrajectory4(coefs(p * (j-2) + 1 : p * (j-1)), x(prev_i : m), order);
-    % Store them in output structure
-    f = [f, [q; der_q]];
-end
+% % Until all knots or input samples have been processed
+% while j <= n && i <= m
+%     disp(i)
+%     % If current sample is at a time lesser than the current knot, go to
+%     % the next sample
+%     if (x(i) <= knots(j))
+%         i = i + 1;
+%     % As soon as it passes the current knot, calculate the values of the
+%     % samples inbetween the previous remembered position inside the input
+%     % vector and the current position
+%     elseif (i - prev_i > 0)
+%         % Calculate trajectories and derivative values
+%         [q, der_q] = polyCoefToTrajectory4(coefs(p * (j-2) + 1 : p * (j-1)), x(prev_i : i - 1), order);
+%         % Store it in output structure
+%         f = [f, [q; der_q]];
+%         % Update previous remembered position to the current value
+%         prev_i = i;
+%         % Update current knot position
+%         j = j + 1;
+%     % If there are no samples in between then just update the knot value
+%     else        
+%         j = j + 1;
+%     end
+% end
+% 
+% 
+% % If all samples have been processed return
+% if i == m + 1
+%     return
+% % Else if all knots have been processed (except the last one) and not all
+% % samples have been processed, process the rest of the samples according to
+% % last polynomial coefficients.
+% elseif j == n + 1
+%     % Calculate values and derivatives for rest of the samples
+%     [q, der_q] = polyCoefToTrajectory4(coefs(p * (j-2) + 1 : p * (j-1)), x(prev_i : m), order);
+%     % Store them in output structure
+%     f = [f, [q; der_q]];
+% end
 
 end
 

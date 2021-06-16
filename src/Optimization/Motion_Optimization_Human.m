@@ -38,7 +38,7 @@ simParam.GenerateConstraints = false;
 
 % Give a suffix for the saved data
 % simParam.SaveSuffix = 'MinPower_50CP';
-optParam.CostFunctionWeights = [0 0 0 1];
+optParam.CostFunctionWeights = [0 0 1 0];
 
 %% Define time related parameters
 % Number of points
@@ -104,11 +104,11 @@ TolFinalConditions = 1e-3;
 optParam.MulFinalConditions = DefaultConstraintTolerance / TolFinalConditions;
 
 % Wrist Lift Off condition tolerances
-TolWristPositionLiftOff = 1e-3;
+TolWristPositionLiftOff = 2e-2;
 optParam.MulWristPositionLiftOff = DefaultConstraintTolerance / TolWristPositionLiftOff;
 
 % Wrist Drop off condition tolerances
-TolWristPositionDropOff = 1e-3;
+TolWristPositionDropOff = 2e-2;
 optParam.MulWristPositionDropOff = DefaultConstraintTolerance / TolWristPositionDropOff;
 
 % Center of Pressure within bounds constraints
@@ -197,12 +197,12 @@ op = optimoptions('fmincon',...
                   );
 
 % Load feasible initial solution
-% ll = q(:, itpParam.KnotIndices).';
-% ll = ll(:).';
-% x0 = ll;
-load('../../data/Output-Data/Optimization-Results/OptResults_Feasible_50CP.mat');
-x0 = OptResults.Results.x_star;
-clear OptResults
+ll = q(:, itpParam.KnotIndices).';
+ll = ll(:).';
+x0 = ll;
+% load('../../data/Output-Data/Optimization-Results/OptResults_Feasible_50CP.mat');
+% x0 = OptResults.Results.x_star;
+% clear OptResults
 
 % Evaluate initial solution
 [J0, dJ0] = costFunctionWrap(x0, optParam);

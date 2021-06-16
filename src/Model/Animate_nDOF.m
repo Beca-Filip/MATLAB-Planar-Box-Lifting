@@ -1,24 +1,24 @@
 function Animate_nDOF(q, L, Ts, varargin)
-%ANIMATE_nDOF animates a n-DOF planar robot, given the joint position
+%ANIMATE_NDOF animates a n-DOF planar robot, given the joint position
 %vectors at successive samples, the robot segment lengths and the sampling
 %rate.
-%   ANIMATE_3DOF(q, L, Ts) takes in the matrix of joint angles q, the
+%   ANIMATE_NDOF(q, L, Ts) takes in the matrix of joint angles q, the
 %   size being (n x Number of samples), the nD vector of segment lengths L,
 %   and the sampling rate Ts in seconds (should be superior to 0.001s).
 %   Creates a figure and animates the robot in a plane.
 %
 %   opts.tool = struct("type", "hand", "length", 1);
-%   ANIMATE_nDOF(q, L, Ts, opts) plots an additional tool shape at the
+%   ANIMATE_NDOF(q, L, Ts, opts) plots an additional tool shape at the
 %   end-effector location. The parameters of the tool should be given
 %   according to the function ANIMATE_TOOLPOINTS.
 %
 %   opts.bgrPlot = @() plot(0.1*randn(1, 20), 0.1*randn(1, 20));
-%   ANIMATE_nDOF(q, L, Ts, opts) takes in an additional function
+%   ANIMATE_NDOF(q, L, Ts, opts) takes in an additional function
 %   bgrPlot, which plots someting in the background of the figure.
 %
 %   opts.handleInits = {@()plot(1, 0)};
 %   opts.callback = @(ii, handle) handle.YData = (2*pi*(ii / 50)))
-%   ANIMATE_nDOF(q, L, Ts, opts) takes in two additional functions, 
+%   ANIMATE_NDOF(q, L, Ts, opts) takes in two additional functions, 
 %   handleInits and callback. handleInits is meant to initialize plot
 %   handles which will later be updated by the callback function.
 %   In the example we'll have a point which will have coordinates
@@ -227,7 +227,7 @@ function timerKillFunction(thisTimer, thisEvent, opts)
         fprintf("Saving animation...\n");
 
         % Create a video writer object
-        vw = VideoWriter(opts.saveas.name, 'Archival');
+        vw = VideoWriter(strcat(opts.saveas, '.avi'));
         
         % Set framerate parameter
         vw.FrameRate = opts.FrameRate;
@@ -247,7 +247,7 @@ function timerKillFunction(thisTimer, thisEvent, opts)
         vw.close();
         
         % Print message to user
-        fprintf(strcat("Animation saved as : ", opts.saveas.name, ".\n"));
+        fprintf(strcat("Animation saved as : ", opts.saveas, ".\n"));
     end
     
     % Delete the timer

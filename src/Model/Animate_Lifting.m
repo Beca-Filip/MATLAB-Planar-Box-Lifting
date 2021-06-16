@@ -1,5 +1,10 @@
-function [outputArg1,outputArg2] = Animate_Lifting(q,L,Ts,LiftParam)
+function [outputArg1,outputArg2] = Animate_Lifting(q,L,Ts,LiftParam,varargin)
 %Animates lifting motion with box and table.
+
+% If additional argument is passed, it's the options
+if nargin>4
+    aopt=varargin{1};
+end
 
 % Get lifting start and end
 iLiftOff = floor(size(q, 2) * LiftParam.PercentageLiftOff);

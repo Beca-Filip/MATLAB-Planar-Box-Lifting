@@ -96,6 +96,8 @@ EW = zeroExternalWrenches6DOF(size(q, 2));
 % Modify the external wrenches at the end effector
 EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
 
+%% Intermediate Computations: 
+
 %% Intermediate Computations: Joint Torques
 
 % Get wrenches from Dyn_3DOF

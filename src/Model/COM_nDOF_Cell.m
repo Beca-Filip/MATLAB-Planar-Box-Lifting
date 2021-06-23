@@ -1,15 +1,15 @@
-function C = COM_nDOF_Cell(q,L,M,CMP)
+function COM = COM_nDOF_Cell(q,L,M,CMP)
 %COM_NDOF_CELL implements the forward kinematic equations of the center
 %of mass of a nDOF planar manipulator for a vectorized input of joint
 %angles. Returns the coordinate matrix C of the center of mass along
 %the trajectory.
 %
-%   C = COM_NDOF_CELL(q, L, M, CMP) takes in the matrix of joint angles
+%   COM = COM_NDOF_CELL(q, L, M, CMP) takes in the matrix of joint angles
 %   (n x Number of samples) alongside the nD vector of segment lengths, nD 
 %   vector of normalized segment masses M, and the matrix of center of mass
-%   positions CMP, that is of size (n x Number of segments) and returns C
+%   positions CMP, that is of size (n x Number of segments) and returns COM
 %   (3 x Number of samples).
-%   C contains in its rows the X and Y position of the overall center of
+%   COM contains in its rows the X and Y position of the overall center of
 %   mass across all time samples.
 %   Matrix CMP contains in its columns the XYZ position of a segments
 %   center of mass with respect to the coordinate system attached to its
@@ -21,7 +21,7 @@ n = size(q, 1);
 N = size(q, 2);
 
 % Perform COM forward kinematics
-C = cell(1, N);        % Prealocate output
+COM = cell(1, N);        % Prealocate output
 
 % For all samples
 for ii = 1 : N
@@ -54,9 +54,9 @@ for ii = 1 : N
     % Overall position of the COM
     for jj = 1 : n
         if jj == 1
-            C{ii} = M(jj) * C{jj};
+            COM{ii} = M(jj) * C{jj};
         else
-            C{ii} = C{ii} + M(jj) * C{jj};
+            COM{ii} = COM{ii} + M(jj) * C{jj};
         end
     end
 end

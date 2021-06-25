@@ -18,7 +18,19 @@ NJ = floor(length(x) / Ncp);
 % Segment length vector
 L = [];
 for ii = 1 : NJ
-    L = [L modelParam.(['L', num2str(ii)])];
+    L = [L, modelParam.(['L', num2str(ii)])];
+end
+
+% Normalized segment mass vector
+M = [];
+for ii = 1 : NJ
+    M = [M, modelParam.(['M', num2str(ii)])];
+end
+
+% Segment centers of mass matrix
+CMP = [];
+for ii = 1 : NJ
+    CMP = [CMP, modelParam.(['COM', num2str(ii)])];
 end
 
 % Extract knots of individual joints
@@ -132,5 +144,50 @@ JP = sum(sum((dq .* GAMMA).^2, 2) ./ (modelParam.TorqueLimits.^2)') / itpParam.I
 
 % #Add to cost function vector
 J = [J JP];
+
+%% Intermediate Computations: Cartesian Velocity of the End-Effector
+
+% Get the velocity
+v_EE = FKM_Velocity_nDOF_Tensor(q, dq, L);
+
+% Get the square of the end effector velocities
+JEEV = sum(sum(v_EE.^2)) / itpParam.ItpResolutionCost / 2;
+
+% #Add to cost function vector
+J = [J JEEV];
+
+%% Intermediate Computations: Cartesian Acceleration of the End-Effector
+
+% Get the acceleration
+a_EE = FKM_Acceleration_nDOF_Tensor(q, dq, ddq, L);
+
+% Get the square of the end effector accelerations
+JEEA = sum(sum(a_EE.^2)) / itpParam.ItpResolutionCost / 2;
+
+% #Add to cost function vector
+J = [J JEEA];
+
+%% Intermediate Computations: Cartesian Velocity of the COM
+
+% Get the velocity
+v_COM = COM_Velocity_nDOF_Tensor(q, dq, L, M, CMP);
+
+% Get the square of the center of mass velocities
+JCOMV = sum(sum(v_COM.^2)) / itpParam.ItpResolutionCost / 2;
+
+% #Add to cost function vector
+J = [J JCOMV];
+
+%% Intermediate Computations: Cartesian Acceleration of the COM
+
+% Get the acceleration
+a_COM = COM_Acceleration_nDOF_Tensor(q, dq, ddq, L, M, CMP);
+
+% Get the square of the center of mass accelerations
+JCOMA = sum(sum(a_COM.^2)) / itpParam.ItpResolutionCost / 2;
+
+% #Add to cost function vector
+J = [J JCOMA];
+
 end
 

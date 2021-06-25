@@ -39,8 +39,11 @@ simParam.GenerateCost = false;
 simParam.GenerateConstraints = false;
 
 % Give a suffix for the saved data
-% simParam.SaveSuffix = 'MinPower_50CP';
-optParam.CostFunctionWeights = [0 0 1 0];
+% simParam.SaveSuffix = 'MinCOMAcceleration_50CP';
+% optParam.CostFunctionWeights = [0 0 0 0 0 0 0 1];
+% optParam.CostFunctionWeights = [0 0 0 0];
+optParam.CostFunctionWeights = zeros(1, 8);
+optParam.CostFunctionWeights(8) = 1;
 
 %% Define time related parameters
 % Number of points

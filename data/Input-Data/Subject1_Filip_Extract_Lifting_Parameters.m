@@ -34,6 +34,20 @@ L = [param.L1,param.L2,param.L3,param.L4,param.L5,param.L6];
 % Manually found indices of liftoff
 iLiftOff = 348;
 iDropOff = 526;
+
+% Cutoff the trajectory at drop off
+q = q(:, 1:iDropOff);
+Time = Time(1:iDropOff);
+Forceplate.Forces = Forceplate.Forces(1:iDropOff, :);
+Forceplate.Moments = Forceplate.Moments(1:iDropOff, :);
+Forceplate.COP = Forceplate.COP(1:iDropOff, :);
+for ii = 1 : length(msetnames)
+    mnames = fieldnames(Markers.(msetnames{ii}));    
+    for jj = 1 : length(mnames)
+        Markers.(msetnames{ii}).(mnames{jj})  = Markers.(msetnames{ii}).(mnames{jj})(1:iDropOff, :);
+    end
+end
+
 %% Plot all joint profiles
 
 % Joint names

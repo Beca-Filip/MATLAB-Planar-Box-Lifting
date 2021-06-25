@@ -42,12 +42,13 @@ for ii = 1 : NJ
     ];
 end
 
-% Stack vertically final conditions
-for ii = 1 : NJ
-    eqCon = [eqCon;
-        optParam.MulFinalConditions * (q_knots{ii}(end) - liftParam.FinalAngles(ii))
-    ];
-end
+% 25/06/2021 Final Angles removed
+% % Stack vertically final conditions
+% for ii = 1 : NJ
+%     eqCon = [eqCon;
+%         optParam.MulFinalConditions * (q_knots{ii}(end) - liftParam.FinalAngles(ii))
+%     ];
+% end
 
 % Get the jacobian
 jacEqCon = jacobian(eqCon, x_cas);

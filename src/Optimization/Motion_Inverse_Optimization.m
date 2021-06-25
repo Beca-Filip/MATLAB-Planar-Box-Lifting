@@ -26,7 +26,14 @@ end
 addpath('optimizationComputables\');
 
 % Load optimal data
+% load_filename = 'MinTorque_50CP';
+% load_filename = 'MinAcceleration_50CP';
+% load_filename = 'MinJerk_50CP';
 load_filename = 'MinPower_50CP';
+% load_filename = 'MinEEVelocity_50CP';
+% load_filename = 'MinEEAcceleration_50CP';
+% load_filename = 'MinCOMVelocity_50CP';
+% load_filename = 'MinCOMAcceleration_50CP';
 % load_filename = 'HumanData';
 load(['../../data/Output-Data/Optimization-Results/OptResults_' load_filename '.mat']);
 
@@ -59,10 +66,10 @@ LiftParam = OptResults.LiftParam;
 x_star = OptResults.Results.x_star;
 
 % Get the cost function and its gradient
-[J_star, dJ_star] = costFunctionSet(x_star);
+[J_star, dJ_star] = costFunctionSetWrap(x_star, optParam);
 
 % Get the nonlinear constraint functions and its gradients
-[C_star, Ceq_star, dC_star, dCeq_star] = nonlinearConstr(x_star);
+[C_star, Ceq_star, dC_star, dCeq_star] = constraintFunctionWrap(x_star);
 
 % Get the linear constraint matrices
 [A_star, b_star, Aeq_star, beq_star] = generateLinearConstraints(itpParam, optParam, modelParam, LiftParam);
@@ -281,6 +288,40 @@ fprintf("The condition number of the recovery matrix is %.4f.\n", cond(C));
 % that is relative to the cost functions
 fprintf("The size of the cost function part of the recovery matrix is [%d, %d] while its rank is %d.\n", size(C(:, 1:Ncf)), rank(C(:, 1:Ncf)));
 fprintf("The condition number of the cost function part of the recovery matrix is %.4f.\n", cond(C(:, 1:Ncf)));
+
+
+% Get the pair-wise correlation between the columns of the matrix
+corrC = corr(C(:, 1:Ncf));
+
+% Plot that correlation matrix in terms of its absolute values
+CF_names = {'Torque', 'Acceleration', 'Jerk', 'Power', 'EEVelocity', 'EEAcceleration', 'COMVelocity', 'COMAcceleration'};
+figure;
+corr_plot_scale = 40;
+ticks_loc = (0 : corr_plot_scale : (size(corrC, 2) - 1) * corr_plot_scale) + corr_plot_scale/2;
+ticks_nam = {};
+for ii = 1 : size(corrC, 2)
+    ticks_nam{end+1} = num2str(ii);
+end
+% imshow(imresize((corrC+1)/2, corr_plot_scale, 'Method', 'Nearest'));
+imshow(imresize(abs(corrC), corr_plot_scale, 'Method', 'Nearest'));
+for ii = 0 : size(corrC, 2) - 1
+    for jj = ii : size(corrC, 2) - 1
+        text( round((ii+0.5) * corr_plot_scale), round((jj + 0.5) * corr_plot_scale), num2str(corrC(ii+1, jj+1), "%.2f"), 'Color', [1 0 0], 'HorizontalAlignment', 'Center');
+        if ii ~= jj
+            text( round((jj+0.5) * corr_plot_scale), round((ii + 0.5) * corr_plot_scale), num2str(corrC(ii+1, jj+1), "%.2f"), 'Color', [1 0 0], 'HorizontalAlignment', 'Center');
+        end
+    end
+end
+axis on;
+xlabel('Recovery Matrix Columns');
+ylabel('Recovery Matrix Columns');
+xticks(ticks_loc);
+yticks(ticks_loc);
+xtickangle(45)
+xticklabels(CF_names);
+yticklabels(CF_names);
+title({'Correlation of the columns of the recovery matrix'; 'corresponding to the cost functions'});
+
 
 
 %% Plot the sorted conditioning

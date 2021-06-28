@@ -67,7 +67,7 @@ Time = linspace(t0, tf, N);
 
 % Create a structure containing interpolation parameters
 % Number of knots (Must be an odd number because of the way we form the initial solution)
-itpParam.NumControlPoints = 17;
+itpParam.NumControlPoints = 15;
 
 % Spline Knot Indices
 itpParam.KnotIndices = floor(linspace(1, N, itpParam.NumControlPoints));

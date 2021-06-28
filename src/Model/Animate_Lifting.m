@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = Animate_Lifting(q,L,Ts,LiftParam,varargin)
+function Animate_Lifting(q,L,Ts,LiftParam,varargin)
 %Animates lifting motion with box and table.
 
 % If additional argument is passed, it's the options
@@ -45,9 +45,9 @@ end
 
 % function animate_callbacks(ii, handle, iLiftOff, iDropOff, LiftParam, BoxCOM)
 function animate_callbacks(ii, handle, iLiftOff, iDropOff, wristdiff)
-    if ii >= iLiftOff && ii <= iDropOff
+    if ii > iLiftOff && ii <= iDropOff
 %         handle.Position = LiftParam.BoxRectangle(BoxCOM(ii, :));
-        handle.Position(1:2) = handle.Position(1:2) + wristdiff(ii, 1:2);
+        handle.Position(1:2) = handle.Position(1:2) + wristdiff(ii-1, 1:2);
 %         handle.Position(1:2) = LiftParam.BoxRectangle(1:2) + wristdiff(ii, 1:2);
     end
 end

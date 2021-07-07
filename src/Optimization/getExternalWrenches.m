@@ -1,4 +1,7 @@
 function [EW] = getExternalWrenches(q,L,LiftParam)
+%GETEXTERNALWRENCHES blablabla. Gets external wrenches.
+%   
+%   EW = GETEXTERNALWRENCHES(q, L, LiftParam)
 
 % Get indices of the beginning and ending of lift
 iLiftOff = floor(LiftParam.PercentageLiftOff * size(q, 2));

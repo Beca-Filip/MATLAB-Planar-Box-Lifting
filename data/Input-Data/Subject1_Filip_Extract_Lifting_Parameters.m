@@ -48,6 +48,12 @@ for ii = 1 : length(msetnames)
     end
 end
 
+%% Filter the joint angles
+
+% Filter input data
+freq_lim = 2;
+% q = lowpass_filter(q, 1/Ts, freq_lim, 5);    
+
 %% Plot all joint profiles
 
 % Joint names
@@ -193,41 +199,30 @@ LiftParam.BoxMass = 10.5;
 % Gravity
 LiftParam.Gravity = 9.81;
 
+%% Save the data and export lifting parameters
+
+% Lifting parameters (lift off and drop off)
+LiftParam.PercentageLiftOff = iLiftOff / size(q, 2);
+LiftParam.PercentageDropOff = iDropOff / size(q, 2);
+
+% Get cartesian position of wrists for lift off
+Twlo = FKM_nDOF_Tensor(q(:, iLiftOff), L);
+Twdo = FKM_nDOF_Tensor(q(:, iDropOff), L);
+
+LiftParam.WristPositionLiftOff = Twlo(1:3, 4, end);
+LiftParam.WristPositionDropOff = Twdo(1:3, 4, end);
+LiftParam.InitialAngles = q(:, 1);
+LiftParam.FinalAngles = q(:, end);
+
+
 %% Plot all joint torque profiles
 
-% Vertical gravitational force acting on the box COM, expressed in the 
-% robot base frame
-bF = [0; -LiftParam.BoxMass * LiftParam.Gravity; 0];
-
-% Moment of the gravitational force with respect to the wrist, expressed in
-% the robot base frame
-bM = cross(-LiftParam.BoxToWristVectorDuringLift, bF);
-
-% Get transformation matrices of the wrist joint during the lifting motion
-T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
-Tw = T(end, :);
-
-% Get the force and moment of the gravitational force excerced on the wrist
-% expressed in the wrist frame
-wF = [];
-wM = [];
-
-for ii = 1 : length(Tw)
-    % Add the rotated force vector to the data structure
-    wF = [wF, -Tw{ii}(1:3, 1:3).'*bF];
-    % Add the rotated moment vector to the data structure
-    wM = [wM, -Tw{ii}(1:3, 1:3).'*bM];
-end
-
-% Get the zero external wrenches
-EW = zeroExternalWrenches6DOF(size(q, 2));
-
-% Modify the external wrenches at the end effector
-EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
+addpath('../../src\Optimization');
+EW = getExternalWrenches(q, L, LiftParam);
 
 % Get torques
-dq = diff(q, 1, 2);
-ddq = diff(q, 2, 2);
+dq = diff(q, 1, 2) / Ts;
+ddq = diff(q, 2, 2) / Ts^2;
 dq = [dq dq(:, end)];
 ddq = [ddq ddq(:, end-1:end)];
 [GAMMA, ~] = Dyn_6DOF(q, dq, ddq, param, EW);
@@ -266,31 +261,15 @@ for ii = 1 : figrows
     end
 end
 
-
-%% Save the data and export lifting parameters
-
-% Lifting parameters (lift off and drop off)
-LiftParam.PercentageLiftOff = iLiftOff / size(q, 2);
-LiftParam.PercentageDropOff = iDropOff / size(q, 2);
-
-% Get cartesian position of wrists for lift off
-Twlo = FKM_nDOF_Tensor(q(:, iLiftOff), L);
-Twdo = FKM_nDOF_Tensor(q(:, iDropOff), L);
-
-LiftParam.WristPositionLiftOff = Twlo(1:3, 4, end);
-LiftParam.WristPositionDropOff = Twdo(1:3, 4, end);
-LiftParam.InitialAngles = q(:, 1);
-LiftParam.FinalAngles = q(:, end);
-
 %% COP related parameters
 
 % Get COP 
 COP = COP_6DOF_Matrix(q,dq,ddq,param,EW);
 
 % Toe and heel positions
-LiftParam.HeelPosition = mean(Markers.BODY.HEEL(:, 1)-Markers.BODY.ANKLE(:, 1));
-LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)-Markers.BODY.ANKLE(:, 1)) + 0.1; % Add 10cm since marker was at 2/3 of the foot length'
-LiftParam.ToePosition = max(COP(1, :)) + 0.01;  % Add 1cm
+LiftParam.HeelPosition = mean(Markers.BODY.HEEL(:, 1)-Markers.BODY.ANKLE(:, 1)) - 0.02; % Remove 2cm
+LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)-Markers.BODY.ANKLE(:, 1)) + 0.13; % Add 13cm since marker was at 2/3 of the foot length'
+% LiftParam.ToePosition = max(COP(1, :)) + 0.01;  % Add 1cm
 
 %%
 % Save
@@ -342,8 +321,8 @@ function h = handle_inits(LiftParam)
 end
 
 function animate_callbacks(ii, handle, iLiftOff, iDropOff, wristdiff)
-    if ii >= iLiftOff && ii <= iDropOff
-        handle.Position(1:2) = handle.Position(1:2) + wristdiff(ii, 1:2);
+    if ii > iLiftOff && ii <= iDropOff
+        handle.Position(1:2) = handle.Position(1:2) + wristdiff(ii-1, 1:2);
 %         handle.Position(1:2) = LiftParam.BoxRectangle(1:2) + wristdiff(ii, 1:2);
     end
 end

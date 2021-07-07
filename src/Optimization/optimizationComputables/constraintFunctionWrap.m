@@ -1,4 +1,4 @@
-function [C,Ceq,dC,dCeq] = constraintFunctionWrap(x)
+function [C,Ceq,dC,dCeq] = constraintFunctionWrap(x, optParam)
 %CONSTRAINTFUNCTIONWRAP wraps around the CASADI generated cost function
 %nonlinearConstr.mexw64 and returns dense outputs.
 
@@ -11,5 +11,9 @@ dC = full(dC);
 Ceq = full(Ceq);
 dCeq = full(dCeq);
 
+% Normalize with multipliers
+C = C .* optParam.InequalityMultipliers';
+dC = dC .* optParam.InequalityMultipliers;
+Ceq = Ceq .* optParam.EqualityMultipliers';
+dCeq = dCeq .* optParam.EqualityMultipliers;
 end
-

@@ -149,6 +149,23 @@ for ii = 1 : size(BoxFarLowerCorner, 2)
     ];
 end
 
+%% Intermediate computation: Box is above table at second to last control knot
+
+% Extract second to last knot
+q_stl = [];
+for ii = 1 : NJ
+    q_stl = [q_stl; q_knots{ii}(end-1)];
+end
+
+% Compute FKM
+T_stl = FKM_nDOF_Cell(q_stl, L);
+
+% Box bottom at COM
+BoxPosition_stl = T_stl{end}(1:3, 4) - liftParam.BoxToWristVectorDuringLift;
+
+% Box above the table at second-to-last position
+additionalHeight = 0.05;    % 2cm above table
+BoxAboveC = liftParam.TableHeight + additionalHeight - BoxPosition_stl(2);
 %% Intermediate Computation: Position of Center of Pressure
 
 % Compute the position of the COP 
@@ -201,6 +218,12 @@ C = [C; CollisionC];
 % Add to description
 constraintInfo.Inequalities(3).Description = 'CollisionConstraints';
 constraintInfo.Inequalities(3).Amount = length(CollisionC);
+
+% Box above table at second to last position
+C = [C; BoxAboveC];
+% Add to description
+constraintInfo.Inequalities(4).Description = 'BoxAboveAtSTL';
+constraintInfo.Inequalities(4).Amount = length(BoxAboveC);
 
 %% Equality constraints
 

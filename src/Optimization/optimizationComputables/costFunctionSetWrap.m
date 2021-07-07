@@ -12,8 +12,8 @@ dJ = full(dJ);
 J2 = full(J2);
 dJ2 = full(dJ2);
 
-% Weight output
-J = [J, J2];
-dJ = [dJ, dJ2];
+% Normalize output
+J = [J, J2] ./ optParam.CostFunctionNormalisation;
+dJ = [dJ, dJ2] ./ optParam.CostFunctionNormalisation;
 end
 

@@ -41,11 +41,21 @@ simParam.GenerateCost = false;
 simParam.GenerateConstraints = false;
 
 % Give a suffix for the saved data
+% simParam.SaveSuffix = 'Feasible_50CP';
+% simParam.SaveSuffix = 'MinTorque_50CP';
+% simParam.SaveSuffix = 'MinAcceleration_50CP';
+% simParam.SaveSuffix = 'MinJerk_50CP';
+% simParam.SaveSuffix = 'MinPower_50CP';
+% simParam.SaveSuffix = 'MinEEVelocity_50CP';
+% simParam.SaveSuffix = 'MinEEAcceleration_50CP';
+% simParam.SaveSuffix = 'MinCOMVelocity_50CP';
 % simParam.SaveSuffix = 'MinCOMAcceleration_50CP';
 % optParam.CostFunctionWeights = [0 0 0 0 0 0 0 1];
 % optParam.CostFunctionWeights = [0 0 0 0];
 optParam.CostFunctionWeights = zeros(1, 8);
-optParam.CostFunctionWeights(8) = 1;
+% optParam.CostFunctionWeights([5]) = 1;
+
+% optParam.CostFunctionWeights = rand(1, 8);
 
 %% Define time related parameters
 % Number of points
@@ -67,7 +77,7 @@ Time = linspace(t0, tf, N);
 
 % Create a structure containing interpolation parameters
 % Number of knots (Must be an odd number because of the way we form the initial solution)
-itpParam.NumControlPoints = 15;
+itpParam.NumControlPoints = 10;
 
 % Spline Knot Indices
 itpParam.KnotIndices = floor(linspace(1, N, itpParam.NumControlPoints));
@@ -100,7 +110,8 @@ modelParam.NJoints = 6;
 %% Constraint tolerances
 
 % Get default tolerance
-DefaultConstraintTolerance = optimoptions('fmincon').ConstraintTolerance;
+% DefaultConstraintTolerance = optimoptions('fmincon').ConstraintTolerance;
+DefaultConstraintTolerance = 1e-3;
 
 % Initial condition tolerances
 TolInitialConditions = 1e-3;
@@ -129,8 +140,22 @@ optParam.MulTorqueLimits = DefaultConstraintTolerance / TolTorqueLimits;
 % Collision constraints
 TolCollisionConstraints = 1e-2;
 optParam.MulCollisionConstraints = DefaultConstraintTolerance / TolCollisionConstraints;
+% optParam.MulCollisionConstraints = 0;
 
-%% Cost Function Parametrization:
+% Box above table at second-to-last control point constraint
+TolBoxAboveAtSTL = 1e-6;
+optParam.MulBoxAboveAtSTL = DefaultConstraintTolerance / TolBoxAboveAtSTL;
+
+%% Constraint Multipliers, Cost Function Parametrization, Cost Function Normalization
+
+% Compute constraints for random inputs just to get the constraint info
+[~, ~, constraintInfo] = constraintFunctions(rand(1, modelParam.NJoints*itpParam.NumControlPoints), itpParam, modelParam, LiftParam);
+% Get multipliers for constraints so as to fit the desired constraint tolerances
+InequalityMultipliers = getMultipliersForTolerance(constraintInfo.Inequalities, optParam);
+EqualityMultipliers = getMultipliersForTolerance(constraintInfo.Equalities, optParam);
+% Store multipliers within optParam
+optParam.InequalityMultipliers = InequalityMultipliers;
+optParam.EqualityMultipliers = EqualityMultipliers;
 
 % Parametrization of the compound cost function
 % optParam.CostFunctionWeights = [0 0 0 0];
@@ -141,8 +166,6 @@ optParam.MulCollisionConstraints = DefaultConstraintTolerance / TolCollisionCons
 if simParam.GenerateCost || simParam.GenerateConstraints
     costFunctionNormalizationScript_human;
 end
-
-% CostNormalization = [1 1 1 1];
 load ../../data/Output-Data/Cost-Normalization/CostNormalizationHuman.mat
 optParam.CostFunctionNormalisation = CostNormalization;
 %% Optimization pipeline
@@ -179,7 +202,7 @@ end
 % Optimization options
 % With gradient check
 % op = optimoptions('fmincon',...   
-%                   'Algorithm', 'sqp',...
+%                   'Algorithm', 'interior-point',...
 %                   'Display', 'Iter', ...
 %                   'MaxIter', 1e4, ...
 %                   'MaxFunctionEvaluations', 2e5, ...
@@ -188,12 +211,13 @@ end
 %                   'TolFun', 1e-3, ...
 %                   'CheckGradients', true, ...
 %                   'FiniteDifferenceType', 'Central', ...
-%                   'FiniteDifferenceStepSize', 1e-4, ...
+%                   'FiniteDifferenceStepSize', 1e-3, ...
 %                   'UseParallel', 'Always' ...
 %                   );
-% % Without
+% Without
 op = optimoptions('fmincon',...   
-                  'Algorithm', 'sqp',...
+                  'Algorithm', 'interior-point',...
+                  'ConstraintTolerance', DefaultConstraintTolerance, ...
                   'Display', 'Iter', ...
                   'MaxIter', 1e4, ...
                   'MaxFunctionEvaluations', 2e5, ...
@@ -213,7 +237,7 @@ x0 = ll;
 
 % Evaluate initial solution
 [J0, dJ0] = costFunctionWrap(x0, optParam);
-[C0, Ceq0, dC0, dCeq0] = nonlinearConstr(x0);
+[C0, Ceq0, dC0, dCeq0] = constraintFunctionWrap(x0, optParam);
 LC0 = A * x0' - b;
 LCeq0 = Aeq * x0' - beq;
 
@@ -254,7 +278,7 @@ end
         fmincon(...
             @(x)costFunctionWrap(x, optParam), ...
             x0, A, b, Aeq, beq, lb, ub, ...
-            @(x)constraintFunctionWrap(x), ...
+            @(x)constraintFunctionWrap(x, optParam), ...
             op ...
         );
     
@@ -332,7 +356,8 @@ opts.legendParameters = {"Location", "SouthWest"};
 %% Artificial squatting motion
 
 % Animate_nDOF(q_star, L, Ts, opts);
-Animate_Lifting(q_star,L,Ts,LiftParam);
+Animate_Lifting(q_star,L,Ts,size(q_star,2),LiftParam);
+% Animate_Lifting(q_star(:, 1:itpParam.KnotIndices(end-1)),L,Ts,length(q_star),LiftParam);
 
 %% Save the optimization data inside structure
 

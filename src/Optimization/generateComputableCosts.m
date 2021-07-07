@@ -9,8 +9,9 @@ x_cas = casadi.SX.sym('x_cas', 1, modelParam.NJoints*itpParam.NumControlPoints);
 % Compute cost functions, and get back a vector
 J = costFunctions(x_cas, itpParam, modelParam,liftParam);
 
-% Normalise cost functions
-J = J ./ optParam.CostFunctionNormalisation;
+% Removed 7/2/2021 as normalization was transferred to costFunctionWrap
+% % Normalise cost functions
+% J = J ./ optParam.CostFunctionNormalisation;
 
 % Get cost functions' gradients
 jacJ = jacobian(J, x_cas)';

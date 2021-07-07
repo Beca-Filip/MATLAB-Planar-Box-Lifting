@@ -1,14 +1,14 @@
-function Animate_Lifting(q,L,Ts,LiftParam,varargin)
+function Animate_Lifting(q,L,Ts,N,LiftParam,varargin)
 %Animates lifting motion with box and table.
 
 % If additional argument is passed, it's the options
-if nargin>4
+if nargin>5
     aopt=varargin{1};
 end
 
 % Get lifting start and end
-iLiftOff = floor(size(q, 2) * LiftParam.PercentageLiftOff);
-iDropOff = floor(size(q, 2) * LiftParam.PercentageDropOff);
+iLiftOff = floor(N * LiftParam.PercentageLiftOff);
+iDropOff = floor(N* LiftParam.PercentageDropOff);
 
 % Get the forward kinematic model
 T = FKM_nDOF_Tensor(q, L);

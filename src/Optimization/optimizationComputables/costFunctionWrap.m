@@ -13,8 +13,13 @@ dJ = full(dJ);
 J2 = full(J2);
 dJ2 = full(dJ2);
 
+% Normalize Output
+J = [J, J2] ./ optParam.CostFunctionNormalisation;
+dJ = [dJ, dJ2] ./ optParam.CostFunctionNormalisation;
+
 % Weight output
-J = sum(optParam.CostFunctionWeights .* [J, J2]);
-dJ = sum(optParam.CostFunctionWeights .* [dJ, dJ2], 2);
+J = sum(optParam.CostFunctionWeights .* J);
+dJ = sum(optParam.CostFunctionWeights .* dJ, 2);
+
 end
 

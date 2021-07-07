@@ -6,12 +6,7 @@ function generateComputableConstraints(itpParam,optParam,modelParam,liftParam)
 x_cas = casadi.SX.sym('x_cas', 1, modelParam.NJoints*itpParam.NumControlPoints);
 
 % Compute constraints
-[C, Ceq, constraintInfo] = constraintFunctions(x_cas, itpParam, modelParam, liftParam);
-
-% Apply multipliers for constraints so as to fit the desired constraint
-% tolerances
-C = applyMultiplierForTolerance(C, constraintInfo.Inequalities, optParam);
-Ceq = applyMultiplierForTolerance(Ceq, constraintInfo.Equalities, optParam);
+[C, Ceq, ~] = constraintFunctions(x_cas, itpParam, modelParam, liftParam);
 
 % Compute gradients
 jacC = jacobian(C, x_cas)';
@@ -44,13 +39,37 @@ mex nonlinearConstr.c -largeArrayDims
 cd('..');
 end
 
-function C = applyMultiplierForTolerance(C, Info, optParam)
-%APPLYMULTIPLIERFORTOLERANCE multiplies constraint values in C by the
-%multipliers stocked in the optParam structure, depending on their type
-%given in the Info structure.
+% function C = applyMultiplierForTolerance(C, Info, optParam)
+% %APPLYMULTIPLIERFORTOLERANCE multiplies constraint values in C by the
+% %multipliers stocked in the optParam structure, depending on their type
+% %given in the Info structure.
+% 
+% % Initialize a counter
+% cnt = 0;
+% 
+% % For each type of constraint described in info
+% for ii = 1 : length(Info)
+%     
+%     % Take the constraints corresponding to the described type, and
+%     % multiply them by the multiplier stored inside the optimization
+%     % parameters
+%     C(cnt + 1 : cnt + Info(ii).Amount) = ...
+%     optParam.(['Mul' Info(ii).Description]) * C(cnt + 1 : cnt + Info(ii).Amount);
+% 
+%     % Update the count variable
+%     cnt  = cnt + Info(ii).Amount;
+% end
+% end
+function mulvec = getMultipliersForTolerance(Info, optParam)
+%GETMULTIPLIERSFORTOLERANCE generates a vector of multipliers of constraint
+%function values in C by the multipliers stocked in the optParam structure,
+%depending on their type given in the Info structure.
 
 % Initialize a counter
 cnt = 0;
+
+% Vector of multipliers
+mulvec = [];
 
 % For each type of constraint described in info
 for ii = 1 : length(Info)
@@ -58,8 +77,8 @@ for ii = 1 : length(Info)
     % Take the constraints corresponding to the described type, and
     % multiply them by the multiplier stored inside the optimization
     % parameters
-    C(cnt + 1 : cnt + Info(ii).Amount) = ...
-    optParam.(['Mul' Info(ii).Description]) * C(cnt + 1 : cnt + Info(ii).Amount);
+    mulvec(cnt + 1 : cnt + Info(ii).Amount) = ...
+    optParam.(['Mul' Info(ii).Description]) * ones(1, Info(ii).Amount);
 
     % Update the count variable
     cnt  = cnt + Info(ii).Amount;

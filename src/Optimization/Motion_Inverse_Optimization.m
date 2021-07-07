@@ -29,10 +29,10 @@ addpath('optimizationComputables\');
 % load_filename = 'MinTorque_50CP';
 % load_filename = 'MinAcceleration_50CP';
 % load_filename = 'MinJerk_50CP';
-load_filename = 'MinPower_50CP';
+% load_filename = 'MinPower_50CP';
 % load_filename = 'MinEEVelocity_50CP';
 % load_filename = 'MinEEAcceleration_50CP';
-% load_filename = 'MinCOMVelocity_50CP';
+load_filename = 'MinCOMVelocity_50CP';
 % load_filename = 'MinCOMAcceleration_50CP';
 % load_filename = 'HumanData';
 load(['../../data/Output-Data/Optimization-Results/OptResults_' load_filename '.mat']);
@@ -69,7 +69,7 @@ x_star = OptResults.Results.x_star;
 [J_star, dJ_star] = costFunctionSetWrap(x_star, optParam);
 
 % Get the nonlinear constraint functions and its gradients
-[C_star, Ceq_star, dC_star, dCeq_star] = constraintFunctionWrap(x_star);
+[C_star, Ceq_star, dC_star, dCeq_star] = constraintFunctionWrap(x_star, optParam);
 
 % Get the linear constraint matrices
 [A_star, b_star, Aeq_star, beq_star] = generateLinearConstraints(itpParam, optParam, modelParam, LiftParam);

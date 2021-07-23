@@ -50,10 +50,16 @@ simParam.GenerateConstraints = false;
 % simParam.SaveSuffix = 'MinEEAcceleration_50CP';
 % simParam.SaveSuffix = 'MinCOMVelocity_50CP';
 % simParam.SaveSuffix = 'MinCOMAcceleration_50CP';
+% simParam.SaveSuffix = 'Mixed_50CP';
+% simParam.SaveSuffix = 'Rand_50CP';
+% rng(356);
+% optParam.CostFunctionWeights = rand(1, 8);
+% optParam.CostFunctionWeights = optParam.CostFunctionWeights / sum(optParam.CostFunctionWeights);
+% optParam.CostFunctionWeights = ones(1, 8) / 8;
 % optParam.CostFunctionWeights = [0 0 0 0 0 0 0 1];
-% optParam.CostFunctionWeights = [0 0 0 0];
 optParam.CostFunctionWeights = zeros(1, 8);
-% optParam.CostFunctionWeights([5]) = 1;
+optParam.CostFunctionWeights([1]) = 1;
+% optParam.CostFunctionWeights = [0.0000    0.9984    0.0000    0.0000    0.0016    0.0000    0.0000    0.0000];
 
 % optParam.CostFunctionWeights = rand(1, 8);
 
@@ -112,6 +118,7 @@ modelParam.NJoints = 6;
 % Get default tolerance
 % DefaultConstraintTolerance = optimoptions('fmincon').ConstraintTolerance;
 DefaultConstraintTolerance = 1e-3;
+optParam.DefaultConstraintTolerance = DefaultConstraintTolerance;
 
 % Initial condition tolerances
 TolInitialConditions = 1e-3;
@@ -216,8 +223,8 @@ end
 %                   );
 % Without
 op = optimoptions('fmincon',...   
-                  'Algorithm', 'interior-point',...
-                  'ConstraintTolerance', DefaultConstraintTolerance, ...
+                  'Algorithm', 'sqp',...
+                  'ConstraintTolerance', optParam.DefaultConstraintTolerance, ...
                   'Display', 'Iter', ...
                   'MaxIter', 1e4, ...
                   'MaxFunctionEvaluations', 2e5, ...

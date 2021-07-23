@@ -32,8 +32,10 @@ addpath('optimizationComputables\');
 % load_filename = 'MinPower_50CP';
 % load_filename = 'MinEEVelocity_50CP';
 % load_filename = 'MinEEAcceleration_50CP';
-load_filename = 'MinCOMVelocity_50CP';
+% load_filename = 'MinCOMVelocity_50CP';
 % load_filename = 'MinCOMAcceleration_50CP';
+load_filename = 'Mixed_50CP';
+% load_filename = 'Rand_50CP';
 % load_filename = 'HumanData';
 load(['../../data/Output-Data/Optimization-Results/OptResults_' load_filename '.mat']);
 

@@ -73,40 +73,41 @@ dddq = [cell_dddq{:}].'; % Merge and transpose so rows correspond to single join
 
 %% Intermediate Computations: External Wrenches from box lifting
 
-% Find the time index where lift off is happening
-iLiftOff = round(Npts * liftParam.PercentageLiftOff);
-% Find the time index where drop off is happening
-iDropOff = round(Npts * liftParam.PercentageDropOff);
-
-% Vertical gravitational force acting on the box COM, expressed in the 
-% robot base frame
-bF = [0; -liftParam.BoxMass * liftParam.Gravity; 0];
-
-% Moment of the gravitational force with respect to the wrist, expressed in
-% the robot base frame
-bM = cross(-liftParam.BoxToWristVectorDuringLift, bF);
-
-% Get transformation matrices of the wrist joint during the lifting motion
-T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
-Tw = T(end, :);
-
-% Get the force and moment of the gravitational force excerced on the wrist
-% expressed in the wrist frame
-wF = [];
-wM = [];
-
-for ii = 1 : length(Tw)
-    % Add the rotated force vector to the data structure
-    wF = [wF, -Tw{ii}(1:3, 1:3)*bF];
-    % Add the rotated moment vector to the data structure
-    wM = [wM, -Tw{ii}(1:3, 1:3)*bM];
-end
-
-% Get the zero external wrenches
-EW = zeroExternalWrenches6DOF(size(q, 2));
-
-% Modify the external wrenches at the end effector
-EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
+% % Find the time index where lift off is happening
+% iLiftOff = round(Npts * liftParam.PercentageLiftOff);
+% % Find the time index where drop off is happening
+% iDropOff = round(Npts * liftParam.PercentageDropOff);
+% 
+% % Vertical gravitational force acting on the box COM, expressed in the 
+% % robot base frame
+% bF = [0; -liftParam.BoxMass * liftParam.Gravity; 0];
+% 
+% % Moment of the gravitational force with respect to the wrist, expressed in
+% % the robot base frame
+% bM = cross(-liftParam.BoxToWristVectorDuringLift, bF);
+% 
+% % Get transformation matrices of the wrist joint during the lifting motion
+% T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
+% Tw = T(end, :);
+% 
+% % Get the force and moment of the gravitational force excerced on the wrist
+% % expressed in the wrist frame
+% wF = [];
+% wM = [];
+% 
+% for ii = 1 : length(Tw)
+%     % Add the rotated force vector to the data structure
+%     wF = [wF, -Tw{ii}(1:3, 1:3)*bF];
+%     % Add the rotated moment vector to the data structure
+%     wM = [wM, -Tw{ii}(1:3, 1:3)*bM];
+% end
+% 
+% % Get the zero external wrenches
+% EW = zeroExternalWrenches6DOF(size(q, 2));
+% 
+% % Modify the external wrenches at the end effector
+% EW.EndEffectorWrenches = [zeros(6, iLiftOff-1), [wF;wM], zeros(6, size(q, 2) - iDropOff)];
+EW = getExternalWrenches(q, L, liftParam);
 
 %% Intermediate Computations: 
 

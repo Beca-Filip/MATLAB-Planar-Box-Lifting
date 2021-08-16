@@ -52,16 +52,13 @@ simParam.GenerateConstraints = false;
 % simParam.SaveSuffix = 'MinCOMAcceleration_50CP';
 % simParam.SaveSuffix = 'Mixed_50CP';
 % simParam.SaveSuffix = 'Rand_50CP';
+optParam.CostFunctionWeights = zeros(1, 8);
+optParam.CostFunctionWeights([1]) = 1;
 % rng(356);
 % optParam.CostFunctionWeights = rand(1, 8);
 % optParam.CostFunctionWeights = optParam.CostFunctionWeights / sum(optParam.CostFunctionWeights);
 % optParam.CostFunctionWeights = ones(1, 8) / 8;
 % optParam.CostFunctionWeights = [0 0 0 0 0 0 0 1];
-optParam.CostFunctionWeights = zeros(1, 8);
-optParam.CostFunctionWeights([1]) = 1;
-% optParam.CostFunctionWeights = [0.0000    0.9984    0.0000    0.0000    0.0016    0.0000    0.0000    0.0000];
-
-% optParam.CostFunctionWeights = rand(1, 8);
 
 %% Define time related parameters
 % Number of points

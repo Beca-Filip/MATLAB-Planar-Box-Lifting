@@ -3,6 +3,13 @@ function [EW] = getExternalWrenches(q,L,LiftParam)
 %   
 %   EW = GETEXTERNALWRENCHES(q, L, LiftParam)
 
+% If we're only looking up to the lift off
+if LiftParam.PercentageLiftOff >= 1
+    % Get the zero external wrenches
+    EW = zeroExternalWrenches6DOF(size(q, 2));
+    return
+end
+
 % Get indices of the beginning and ending of lift
 iLiftOff = floor(LiftParam.PercentageLiftOff * size(q, 2));
 iDropOff = floor(LiftParam.PercentageDropOff * size(q, 2));

@@ -81,7 +81,7 @@ for ii = 1 : figrows
         xlabel('Time [s]');
         ylabel([Joints{curr} ' angle [rad]']);
         title([Joints{curr} ' joint trajectory']);
-        legend;
+        legend('Location', 'Best');
     end
 end
 
@@ -133,7 +133,7 @@ for ii = 1 : figrows
         xlabel('Time [s]');
         ylabel([Joints{curr} ' torque [Nm]']);
         title([Joints{curr} ' torque profile']);
-        legend;
+        legend('Location', 'Best');
     end
 end
 
@@ -166,7 +166,7 @@ for ii = 1 : figrows
         xlabel('Time [s]');
         ylabel([Joints{curr} ' angular accel. [rad/s^2]']);
         title([Joints{curr} ' angular acceleration']);
-        legend;
+        legend('Location', 'Best');
     end
 end
 
@@ -199,7 +199,7 @@ for ii = 1 : figrows
         xlabel('Time [s]');
         ylabel([Joints{curr} ' angular jerk [rad/s^3]']);
         title([Joints{curr} ' angular jerk']);
-        legend;
+        legend('Location', 'Best');
     end
 end
 
@@ -236,7 +236,7 @@ for ii = 1 : figrows
         xlabel('Time [s]');
         ylabel([Joints{curr} ' power [W]']);
         title([Joints{curr} ' joint power']);
-        legend;
+        legend('Location', 'Best');
     end
 end
 
@@ -259,7 +259,7 @@ plot(Time, GAMMA_SN_star, 'DisplayName', '\Gamma_{(N)}^{2}-opt');
 plot(Time, GAMMA_SN_human, 'DisplayName', '\Gamma_{(N)}^{2}-hum');
 xlabel('Time [s]');
 ylabel('Normalised torque [None]');
-legend;
+legend('Location', 'Best');
 title({'Comparison of optimisation based and'; 'human sum of normalised squared torques'});
 
 % IFFLAG end
@@ -282,7 +282,7 @@ plot(Time, ddq_S_star, 'DisplayName', 'ddq_{(N)}^{2}-opt');
 plot(Time, ddq_S_human, 'DisplayName', 'ddq_{(N)}^{2}-hum');
 xlabel('Time [s]');
 ylabel('Accelerations [rad^2/s^4]');
-legend;
+legend('Location', 'Best');
 title({'Comparison of optimisation based and'; 'human sum squared accelerations'});
 
 end
@@ -305,7 +305,7 @@ plot(Time, dddq_S_star, 'DisplayName', 'dddq_{(N)}^{2}-opt');
 plot(Time, dddq_S_human, 'DisplayName', 'dddq_{(N)}^{2}-hum');
 xlabel('Time [s]');
 ylabel('Jerks^2 [rad^2/s^6]');
-legend;
+legend('Location', 'Best');
 title({'Comparison of optimisation based and'; 'human sum squared jerks'});
 
 % IFFLAG end
@@ -327,7 +327,7 @@ plot(Time, P_SN_star, 'DisplayName', 'P_{(N)}^{2}-opt');
 plot(Time, P_SN_human, 'DisplayName', 'P_{(N)}^{2}-hum');
 xlabel('Time [s]');
 ylabel({'(Norm. by Torque)'; 'Power^2 [rad^2/s^2]'});
-legend;
+legend('Location', 'Best');
 title({'Comparison of optimisation based and'; 'human sum squared joint powers'});
 
 % IFFLAG end
@@ -369,7 +369,7 @@ xticklabels(Fnames);
 xtickangle(30);
 ylabel('Objective relative sizes');
 title({'Visual comparison of multi-objective criteria between' ; 'a trajectory obtained from human measurements'; 'and a trajectory obtained from optimization'});
-legend;
+legend('Location', 'Best');
 
 % IFFLAG end
 end
@@ -405,7 +405,7 @@ xticklabels(Fnames);
 xtickangle(30);
 ylabel('Objective Value');
 title({'Numerical comparison of multi-objective criteria between' ; 'a trajectory obtained from human measurements'; 'and a trajectory obtained from optimization'});
-legend;
+legend('Location', 'Best');
 
 % IFFLAG end
 end

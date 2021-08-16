@@ -130,24 +130,25 @@ iLiftOff = round(Npts * liftParam.PercentageLiftOff);
 % Find the time index where drop off is happening
 iDropOff = round(Npts * liftParam.PercentageDropOff);
 
-% Get transformation matrices of the wrist joint during the lifting motion
-T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
-Tw = T(end, :);
-
-% BoxCorner from wrist FKM
-BoxFarLowerCorner = cell(1, size(Tw, 2));
-for ii = 1 : size(Tw, 2)
-    % WristPos + WristToBoxCOM + HalfOfBoxWidthToTheRight
-    BoxFarLowerCorner{ii} = Tw{ii}(1:3, 4) - liftParam.BoxToWristVectorDuringLift + [liftParam.BoxWidth/2;0;0];
-end
-
-% Constraint
-CollisionC = [];
-for ii = 1 : size(BoxFarLowerCorner, 2)
-    CollisionC = [CollisionC;
-    (BoxFarLowerCorner{ii}(1) - liftParam.TableLowerNearCorner(1)) * (BoxFarLowerCorner{ii}(2) <= liftParam.TableHeight)   % Box_x <= Table_x iff Box_y <= Table_y
-    ];
-end
+% Remove because of looking only at lift off
+% % Get transformation matrices of the wrist joint during the lifting motion
+% T = FKM_nDOF_Cell(q(:, iLiftOff:iDropOff), L);
+% Tw = T(end, :);
+% 
+% % BoxCorner from wrist FKM
+% BoxFarLowerCorner = cell(1, size(Tw, 2));
+% for ii = 1 : size(Tw, 2)
+%     % WristPos + WristToBoxCOM + HalfOfBoxWidthToTheRight
+%     BoxFarLowerCorner{ii} = Tw{ii}(1:3, 4) - liftParam.BoxToWristVectorDuringLift + [liftParam.BoxWidth/2;0;0];
+% end
+% 
+% % Constraint
+% CollisionC = [];
+% for ii = 1 : size(BoxFarLowerCorner, 2)
+%     CollisionC = [CollisionC;
+%     (BoxFarLowerCorner{ii}(1) - liftParam.TableLowerNearCorner(1)) * (BoxFarLowerCorner{ii}(2) <= liftParam.TableHeight)   % Box_x <= Table_x iff Box_y <= Table_y
+%     ];
+% end
 
 %% Intermediate computation: Box is above table at second to last control knot
 
@@ -209,21 +210,21 @@ C = [C; (-GAMMA(2, :)' - modelParam.TorqueLimits(2))];
 C = [C; (GAMMA(3, :)' - modelParam.TorqueLimits(3))];
 C = [C; (-GAMMA(3, :)' - modelParam.TorqueLimits(3))];
 % Add to description
-constraintInfo.Inequalities(2).Description = 'TorqueLimits';
-constraintInfo.Inequalities(2).Amount = 6*length(GAMMA(1, :));
+constraintInfo.Inequalities(end+1).Description = 'TorqueLimits';
+constraintInfo.Inequalities(end).Amount = 6*length(GAMMA(1, :));
 
 
 % Collision constraints
-C = [C; CollisionC];
+% C = [C; CollisionC];
 % Add to description
-constraintInfo.Inequalities(3).Description = 'CollisionConstraints';
-constraintInfo.Inequalities(3).Amount = length(CollisionC);
+% constraintInfo.Inequalities(3).Description = 'CollisionConstraints';
+% constraintInfo.Inequalities(3).Amount = length(CollisionC);
 
-% Box above table at second to last position
-C = [C; BoxAboveC];
-% Add to description
-constraintInfo.Inequalities(4).Description = 'BoxAboveAtSTL';
-constraintInfo.Inequalities(4).Amount = length(BoxAboveC);
+% % Box above table at second to last position
+% C = [C; BoxAboveC];
+% % Add to description
+% constraintInfo.Inequalities(end+1).Description = 'BoxAboveAtSTL';
+% constraintInfo.Inequalities(end).Amount = length(BoxAboveC);
 
 %% Equality constraints
 
@@ -236,11 +237,11 @@ constraintInfo.Equalities(1).Description = 'WristPositionLiftOff';
 constraintInfo.Equalities(1).Amount = 2;
 
 % Drop Off conditions ( along X and Y axis )
-Ceq = [Ceq; Tdo{end, 1}(1, 4) - liftParam.WristPositionDropOff(1)];
-Ceq = [Ceq; Tdo{end, 1}(2, 4) - liftParam.WristPositionDropOff(2)];
+% Ceq = [Ceq; Tdo{end, 1}(1, 4) - liftParam.WristPositionDropOff(1)];
+% Ceq = [Ceq; Tdo{end, 1}(2, 4) - liftParam.WristPositionDropOff(2)];
 
-constraintInfo.Equalities(2).Description = 'WristPositionDropOff';
-constraintInfo.Equalities(2).Amount = 2;
+% constraintInfo.Equalities(2).Description = 'WristPositionDropOff';
+% constraintInfo.Equalities(2).Amount = 2;
 
 end
 

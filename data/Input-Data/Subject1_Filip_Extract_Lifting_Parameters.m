@@ -135,7 +135,7 @@ hold on;
 plot(Time, Markers.BOX.FARR(:, 2), 'DisplayName', 'BoxHeight');
 mm = [min(Markers.BOX.FARR(:, 2)), max(Markers.BOX.FARR(:, 2))];
 plot([Time(iLiftOff) Time(iLiftOff)], mm, '--', 'DisplayName', 'LiftOff', 'Color', [1 0 1]);
-plot([Time(iDropOff) Time(iDropOff)], mm, '--', 'DisplayName', 'DropOff', 'Color', [0.8 0 0.8]);
+% plot([Time(iDropOff) Time(iDropOff)], mm, '--', 'DisplayName', 'DropOff', 'Color', [0.8 0 0.8]);
 ylabel(['Height [m]']);
 legend;
 title('Box height and vertical force profiles');
@@ -272,6 +272,22 @@ LiftParam.ToePosition  = mean(Markers.BODY.METATARSAL(:, 1)-Markers.BODY.ANKLE(:
 % LiftParam.ToePosition = max(COP(1, :)) + 0.01;  % Add 1cm
 
 %%
+% Cutoff the trajectory at Lift off
+q = q(:, 1:iLiftOff);
+Time = Time(1:iLiftOff);
+Forceplate.Forces = Forceplate.Forces(1:iLiftOff, :);
+Forceplate.Moments = Forceplate.Moments(1:iLiftOff, :);
+Forceplate.COP = Forceplate.COP(1:iLiftOff, :);
+for ii = 1 : length(msetnames)
+    mnames = fieldnames(Markers.(msetnames{ii}));    
+    for jj = 1 : length(mnames)
+        Markers.(msetnames{ii}).(mnames{jj})  = Markers.(msetnames{ii}).(mnames{jj})(1:iLiftOff, :);
+    end
+end
+% Lifting parameters (lift off and drop off)
+LiftParam.PercentageLiftOff = iLiftOff / size(q, 2);
+LiftParam.PercentageDropOff = iDropOff / size(q, 2);
+
 % Save
 modelParam = param;
 

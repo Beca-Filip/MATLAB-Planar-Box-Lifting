@@ -30,7 +30,7 @@ addpath('optimizationComputables\');
 % load_filename = 'MinAcceleration_50CP';
 % load_filename = 'MinJerk_50CP';
 % load_filename = 'MinPower_50CP';
-load_filename = 'MinEEVelocity_50CP';
+% load_filename = 'MinEEVelocity_50CP';
 % load_filename = 'MinEEAcceleration_50CP';
 % load_filename = 'MinCOMVelocity_50CP';
 % load_filename = 'MinCOMAcceleration_50CP';
@@ -128,6 +128,14 @@ rshpIneqLin = reshape(x_star * A_star - reshape(b_star, 1, []), 1, []);
 rshpLb = x_star * A_lb_star - b_lb_star;
 rshpUb = x_star * A_ub_star - b_ub_star;
 Ineq = [rshpIneqLin, reshape(C_star, 1, []), rshpLb, rshpUb];
+
+% Keep only inequality constraints and gradients of inequality constraints
+% which are active but store full versions for analysis
+dIneq_full = dIneq;
+Ineq_full = Ineq;
+Kept_Ineqs = Ineq >= 0;
+dIneq = dIneq(:, Ineq >= 0);
+Ineq = Ineq(Ineq >= 0);
 
 % Append linear and nonlinear equality values into a single vector, but
 % make them row vectors first

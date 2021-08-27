@@ -59,9 +59,9 @@ ddq = [cell_ddq{:}].'; % Merge and transpose so rows correspond to single joint 
 %% Intermediate Computations: Lift Off and Drop Off wrist cartesian positions
 
 % Find the time index where lift off is happening
-timeLiftOff = round(itpParam.KnotIndices(end) * liftParam.PercentageLiftOff) * 0.01;
+timeLiftOff = itpParam.KnotIndices(end) * liftParam.PercentageLiftOff * 0.01;
 % Find the time index where drop off is happening
-timeDropOff = round(itpParam.KnotIndices(end) * liftParam.PercentageDropOff) * 0.01;
+timeDropOff = itpParam.KnotIndices(end) * liftParam.PercentageDropOff * 0.01;
 
 % Get the joint angles at lift off time
 qLiftOff = [];

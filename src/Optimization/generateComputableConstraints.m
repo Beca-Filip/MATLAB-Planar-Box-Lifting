@@ -5,6 +5,28 @@ function generateComputableConstraints(itpParam,optParam,modelParam,liftParam)
 % Create symbolic variables
 x_cas = casadi.SX.sym('x_cas', 1, modelParam.NJoints*itpParam.NumControlPoints);
 
+% % Create symbolic variables for model parameters
+% for ii = 1 : 6
+%     modelParam.(['L', num2str(ii)]) = casadi.SX.sym(['modelParam.L', num2str(ii)], 1, 1);
+%     modelParam.(['M', num2str(ii)]) = casadi.SX.sym(['modelParam.M', num2str(ii)], 1, 1);
+%     modelParam.(['COM', num2str(ii)]) = casadi.SX.sym(['modelParam.COM', num2str(ii)], 3, 1);
+%     modelParam.(['ZZ', num2str(ii)]) = casadi.SX.sym(['modelParam.ZZ', num2str(ii)], 1, 1);
+% end
+% modelParam.JointLimits = casadi.SX.sym('modelParam.JointLimits', 2, 6);
+% modelParam.TorqueLimits = casadi.SX.sym('modelParam.TorqueLimits', 1, 6);
+
+% % Create symbolic variables for task parameters
+% liftParam.BoxToWristVectorDuringLift = casadi.SX.sym('liftParam.BoxToWristVectorDuringLift', 1, 1);
+% liftParam.PercentageLiftOff = casadi.SX.sym('liftParam.PercentageLiftOff', 1, 1);
+% liftParam.PercentageDropOff = casadi.SX.sym('liftParam.PercentageDropOff', 1, 1);
+% liftParam.WristPositionLiftOff = casadi.SX.sym('liftParam.WristPositionLiftOff', 1, 1);
+% liftParam.WristPositionDropOff = casadi.SX.sym('liftParam.WristPositionDropOff', 1, 1);
+% liftParam.InitialAngles = casadi.SX.sym('liftParam.InitialAngles', 1, 1);
+% liftParam.FinalAngles = casadi.SX.sym('liftParam.FinalAngles', 1, 1);
+% liftParam.HeelPosition = casadi.SX.sym('liftParam.HeelPosition', 1, 1);
+% liftParam.ToePosition = casadi.SX.sym('liftParam.ToePosition', 1, 1);
+% liftParam.BoxRectangleInitial = casadi.SX.sym('liftParam.BoxRectangleInitial', 1, 4);
+
 % Compute constraints
 [C, Ceq, ~] = constraintFunctions(x_cas, itpParam, modelParam, liftParam);
 

@@ -177,7 +177,7 @@ optParam.CostFunctionNormalisation = CostNormalization;
 % Generate or load linear constraint matrices
 [A, b, Aeq, beq] = generateLinearConstraints(itpParam, optParam, modelParam, LiftParam);
 
-
+%%
 % Code generation is time consuming, do it only if flag is set
 if simParam.GenerateConstraints
     % Turn off warnings for code generation
@@ -202,7 +202,7 @@ if simParam.GenerateCost
     % Turn on warnings
     warning('on', 'all');
 end
-
+%%
 % Optimization options
 % With gradient check
 % op = optimoptions('fmincon',...   

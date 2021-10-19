@@ -27,16 +27,21 @@ for ii = 1 : N
         T{jj, ii}= [Rotz(q(jj,ii)) [0;0;0]; 0 0 0 1];
     end
     
-    % For the last joint
-    T{n+1, ii} = eye(4);    % Initialize to 4x4 Identity
-                            % Rotation part is already identity
-    
     % For the last n joints, set the translation along x to be equal to the
     % segment length and then multiply the transformation matrix by the
     % previous one
     for jj = 2 : n+1
-        % Set translation along x
-        T{jj, ii}(1, 4) = L(jj-1);
+        
+        % For the first n joints
+        if jj <= n
+            % Set translation along x
+            T{jj, ii}(1, 4) = L(jj-1);
+        % For the last joint
+        else
+            % Set the whole matrix equal to identity rotation and segment
+            % length translation along x
+            T{jj, ii} = [[eye(3), [L(jj-1); 0; 0]]; [0,0,0,1]];
+        end
         
         % Multiply by transformation of previous segment
         T{jj, ii} = T{jj-1, ii} * T{jj, ii};        

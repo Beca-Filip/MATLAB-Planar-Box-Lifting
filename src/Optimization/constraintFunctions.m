@@ -63,19 +63,17 @@ timeLiftOff = itpParam.KnotIndices(end) * liftParam.PercentageLiftOff * 0.01;
 % Find the time index where drop off is happening
 timeDropOff = itpParam.KnotIndices(end) * liftParam.PercentageDropOff * 0.01;
 
+
 % Get the joint angles at lift off time
 qLiftOff = [];
 for ii = 1 : NJ
-    qLiftOff = [qLiftOff; splineCoefToTrajectory(Tknots, polycoeffs{ii}, timeLiftOff, 0)];
+    qLiftOff = [qLiftOff; splineCoefToTrajectory_modified(Tknots, polycoeffs{ii}, timeLiftOff, 0)];
 end
 % Get the joint angles at drop off time
 qDropOff = [];
 for ii = 1 : NJ
-    qDropOff = [qDropOff; splineCoefToTrajectory(Tknots, polycoeffs{ii}, timeDropOff, 0)];
+    qDropOff = [qDropOff; splineCoefToTrajectory_modified(Tknots, polycoeffs{ii}, timeDropOff, 0)];
 end
-% disp(size(qLiftOff))
-% disp(size(qDropOff))
-
 % % Find the time index where lift off is happening
 % iLiftOff = round(Npts * liftParam.PercentageLiftOff);
 % % Find the time index where drop off is happening
@@ -84,6 +82,12 @@ end
 % qLiftOff = q(:, iLiftOff);
 % qDropOff = q(:, iDropOff);
 
+% if strcmp(class(qLiftOff), 'casadi.SX')
+%     disp('qLiftOff');
+%     disp(qLiftOff);
+%     disp('qDropOff');
+%     disp(qDropOff);
+% end
 % Find the Cartesian configuration of the robot ad lift-off time
 Tlo = FKM_nDOF_Cell(qLiftOff, L);
 % Find the Cartesian configuration of the robot ad lift-off time
@@ -125,10 +129,10 @@ EW = getExternalWrenches(q,L,liftParam);
 
 %% Box doesnt intersect with table
 
-% Find the time index where lift off is happening
-iLiftOff = round(Npts * liftParam.PercentageLiftOff);
-% Find the time index where drop off is happening
-iDropOff = round(Npts * liftParam.PercentageDropOff);
+% % Find the time index where lift off is happening
+% iLiftOff = round(Npts * liftParam.PercentageLiftOff);
+% % Find the time index where drop off is happening
+% iDropOff = round(Npts * liftParam.PercentageDropOff);
 
 % Remove because of looking only at lift off
 % % Get transformation matrices of the wrist joint during the lifting motion
@@ -195,6 +199,8 @@ constraintInfo.Equalities = struct([]);
 C = [];
 
 % COP conditions
+disp(size(XCOP))
+disp(size(XCOP_high))
 C = [C; (XCOP - XCOP_high)'];
 C = [C; (-XCOP + XCOP_low)'];
 % % Add to description
@@ -230,6 +236,9 @@ constraintInfo.Inequalities(end).Amount = 6*length(GAMMA(1, :));
 
 Ceq = [];
 % Lift Off conditions ( along X and Y axis )
+% class(Tlo)
+% size(Tlo)
+% size(Tlo{end, 1})
 Ceq = [Ceq; Tlo{end, 1}(1, 4) - liftParam.WristPositionLiftOff(1)];
 Ceq = [Ceq; Tlo{end, 1}(2, 4) - liftParam.WristPositionLiftOff(2)];
 

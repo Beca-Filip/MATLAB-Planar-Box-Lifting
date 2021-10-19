@@ -31,8 +31,11 @@ else
 end
 
 % Load data
-load ../../data/Input-Data/Subject1_Filip_Segmented.mat
-
+% load ../../data/Input-Data/Subject1_Filip_Segmented.mat
+load('C:\Users\Administrateur\Dropbox\Filip_Becanovic_2020\box-lifting-data-collection\processed_data\step05_lifting_parameters\bla.mat')
+q = all_trials(1).q(:, 1:all_trials(1).events(3));
+LiftParam = all_trials(1).LiftParam;
+modelParam = all_trials(1).modelParam;
 %% Define some simulation parameters
 
 % Should we generate all the simulation functions and gradients or can they
@@ -53,7 +56,7 @@ simParam.GenerateConstraints = false;
 % simParam.SaveSuffix = 'Mixed_50CP';
 % simParam.SaveSuffix = 'Rand_50CP';
 optParam.CostFunctionWeights = zeros(1, 8);
-optParam.CostFunctionWeights([1]) = 1;
+optParam.CostFunctionWeights([8]) = 1;
 % rng(356);
 % optParam.CostFunctionWeights = rand(1, 8);
 % optParam.CostFunctionWeights = optParam.CostFunctionWeights / sum(optParam.CostFunctionWeights);
@@ -177,31 +180,24 @@ optParam.CostFunctionNormalisation = CostNormalization;
 % Generate or load linear constraint matrices
 [A, b, Aeq, beq] = generateLinearConstraints(itpParam, optParam, modelParam, LiftParam);
 
-%%
+%% Invoke functions that generate the cost and constraint gradient evaluation procedures
+
+% Turn off warnings for code generation
+% MINGW Version not supported
+warning('off','all');
+
 % Code generation is time consuming, do it only if flag is set
 if simParam.GenerateConstraints
-    % Turn off warnings for code generation
-    % MINGW Version not supported
-    warning('off','all');
-
     % Generate nonlinear constraint computables
     generateComputableConstraints(itpParam, optParam, modelParam, LiftParam);
-    
-    % Turn on warnings
-    warning('on', 'all');
 end
-
-if simParam.GenerateCost
-    % Turn off warnings for code generation
-    % MINGW Version not supported
-    warning('off','all');
-    
+if simParam.GenerateCost    
     % Generate cost function computable
     generateComputableCosts(itpParam, optParam, modelParam, LiftParam);
-    
-    % Turn on warnings
-    warning('on', 'all');
 end
+    
+% Turn on warnings
+warning('on', 'all');
 %%
 % Optimization options
 % With gradient check
@@ -240,8 +236,8 @@ x0 = ll;
 % clear OptResults
 
 % Evaluate initial solution
-[J0, dJ0] = costFunctionWrap(x0, optParam);
-[C0, Ceq0, dC0, dCeq0] = constraintFunctionWrap(x0, optParam);
+[J0, dJ0] = costFunctionWrap(x0, optParam, modelParam, LiftParam);
+[C0, Ceq0, dC0, dCeq0] = constraintFunctionWrap(x0, optParam, modelParam, LiftParam);
 LC0 = A * x0' - b;
 LCeq0 = Aeq * x0' - beq;
 
@@ -280,9 +276,9 @@ end
 % Optimization
 [x_star, f_star, ef_star, out_star, lbd_star, grad_star, hess_star] = ...
         fmincon(...
-            @(x)costFunctionWrap(x, optParam), ...
+            @(x)costFunctionWrap(x, optParam, modelParam, LiftParam), ...
             x0, A, b, Aeq, beq, lb, ub, ...
-            @(x)constraintFunctionWrap(x, optParam), ...
+            @(x)constraintFunctionWrap(x, optParam, modelParam, LiftParam), ...
             op ...
         );
     

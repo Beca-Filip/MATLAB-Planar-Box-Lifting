@@ -32,7 +32,7 @@ addpath('optimizationComputables\');
 % load_filename = 'MinPower_50CP';
 % load_filename = 'MinEEVelocity_50CP';
 % load_filename = 'MinEEAcceleration_50CP';
-% load_filename = 'MinCOMVelocity_50CP';
+load_filename = 'MinCOMVelocity_50CP';
 % load_filename = 'MinCOMAcceleration_50CP';
 % load_filename = 'Mixed_50CP';
 % load_filename = 'Rand_50CP';
@@ -67,11 +67,13 @@ modelParam = OptResults.modelParam;
 LiftParam = OptResults.LiftParam;
 x_star = OptResults.Results.x_star;
 
+LiftParam.PercentageLiftOff = 1;
+
 % Get the cost function and its gradient
-[J_star, dJ_star] = costFunctionSetWrap(x_star, optParam);
+[J_star, dJ_star] = costFunctionSetWrap(x_star, optParam, modelParam);
 
 % Get the nonlinear constraint functions and its gradients
-[C_star, Ceq_star, dC_star, dCeq_star] = constraintFunctionWrap(x_star, optParam);
+[C_star, Ceq_star, dC_star, dCeq_star] = constraintFunctionWrap(x_star, optParam, modelParam, LiftParam);
 
 % Get the linear constraint matrices
 [A_star, b_star, Aeq_star, beq_star] = generateLinearConstraints(itpParam, optParam, modelParam, LiftParam);

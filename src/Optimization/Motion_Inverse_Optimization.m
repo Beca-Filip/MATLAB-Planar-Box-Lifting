@@ -68,10 +68,10 @@ LiftParam = OptResults.LiftParam;
 x_star = OptResults.Results.x_star;
 
 % Get the cost function and its gradient
-[J_star, dJ_star] = costFunctionSetWrap(x_star, optParam);
+[J_star, dJ_star] = costFunctionSetWrap(x_star, optParam, modelParam);
 
 % Get the nonlinear constraint functions and its gradients
-[C_star, Ceq_star, dC_star, dCeq_star] = constraintFunctionWrap(x_star, optParam);
+[C_star, Ceq_star, dC_star, dCeq_star] = constraintFunctionWrap(x_star, optParam, modelParam);
 
 % Get the linear constraint matrices
 [A_star, b_star, Aeq_star, beq_star] = generateLinearConstraints(itpParam, optParam, modelParam, LiftParam);

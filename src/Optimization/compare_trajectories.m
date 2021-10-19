@@ -1,21 +1,13 @@
-function [outputArg1,outputArg2] = compare_trajectories(x1,x2,modelParam,itpParam,Time)
-%COMPARE_TRAJECTORIES compares two trajectories given by their control 
-%points.
+function compare_trajectories(q1, q2, Time)
+%COMPARE_TRAJECTORIES compares two trajectories.
 %
-%   e = COMPARE_TRAJECTORIES(x1,x2,itpParam) returns the RMSE between 
-%   interpolated trajectories from x1, x2.
+%   COMPARE_TRAJECTORIES(q1, q2, Time)
 
 % Define rmse 
 rmse = @(a,b) sqrt(sum((a-b).^2 / numel(a), 'all'));
 
-% Get trajectories
-[q1, dq1, ddq1] = unpackSplines(x1, modelParam, itpParam, Time);
-[q2, dq2, ddq2] = unpackSplines(x2, modelParam, itpParam, Time);
-
 % Joint names
 Joints = {'Ankle', 'Knee', 'Hip', 'Back', 'Shoulder', 'Elbow'};
-% Make 2d vector of ones for plotting
-Ones = ones(1, 2);
 % How many rows
 figcols = 2;
 figrows = 3;
@@ -41,7 +33,9 @@ for ii = 1 : figrows
         % Labels
         xlabel('Time [s]');
         ylabel([Joints{curr} ' angle [rad]']);
-        title({[Joints{curr} ' joint trajectory']; ['RMSE = ', num2str(rad2deg(rmse(q1(curr, :), q2(curr, :))), '%.4f'), 'rad']});
+        title({[Joints{curr} ' joint trajectory']; ['RMSE = ', num2str(rad2deg(rmse(q1(curr, :), q2(curr, :))), '%.4f'), 'deg']});
         legend;
     end
+end
+
 end

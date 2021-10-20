@@ -186,7 +186,7 @@ LiftParam.BoxRectangleInitial = [BoxLowerNearCorner(1:2), LiftParam.BoxWidth, Li
 % Box Rectangle from box COM
 LiftParam.BoxRectangle=@(BoxCOM)[BoxCOM(:, 1:2)-LiftParam.BoxWidth/2, LiftParam.BoxWidth, LiftParam.BoxHeight];
 % Animation options
-opts.bgrPlot = @()background(TableRectangle); 
+% opts.bgrPlot = @()background(TableRectangle, Twlo); 
 
 opts.handleInits = {@()handle_inits(LiftParam)};
 opts.callback = @(ii, handle) animate_callbacks(ii, handle, iLiftOff, iDropOff, diff(Markers.BODY.WRIST - Markers.BODY.WRIST(iLiftOff, :)));
@@ -215,9 +215,13 @@ LiftParam.InitialAngles = q(:, 1);
 LiftParam.FinalAngles = q(:, end);
 
 
+opts.bgrPlot = @()background(TableRectangle, Twlo); 
+Animate_nDOF(q, L, Ts, opts);
+
+
 %% Plot all joint torque profiles
 
-addpath('../../src\Optimization');
+addpath('../../src\OptimizatiLifon');
 EW = getExternalWrenches(q, L, LiftParam);
 
 % Get torques
@@ -309,7 +313,7 @@ maxTorque_ELBOW = 2*77;     % Double because of symmetry
 
 modelParam.TorqueLimits = [maxTorque_ANKLE, maxTorque_KNEE, maxTorque_HIP, maxTorque_BACK, maxTorque_SHOULDER, maxTorque_ELBOW];
 
-save('Subject1_Filip_Segmented.mat', 'modelParam', 'q', 'Markers', 'Forceplate', 'LiftParam');
+% save('Subject1_Filip_Segmented.mat', 'modelParam', 'q', 'Markers', 'Forceplate', 'LiftParam');
 
 %% 
 function [lb, ub] = expandIntervalByPercentage(pc, lb, ub)
@@ -327,9 +331,10 @@ function [lb, ub] = expandIntervalByPercentage(pc, lb, ub)
 end
 
 % function background(TableRectangle, BoxRectangle)
-function background(TableRectangle)
+function background(TableRectangle, Twlo)
 rectangle('Position', TableRectangle, 'EdgeColor', [0 0 0]);
 % rectangle('Position', BoxRectangle, 'EdgeColor', [0 0 1]);
+plot(Twlo(1, 4, end), Twlo(2, 4, end), 'ro', 'DisplayName', 'Twlo');
 end
 
 function h = handle_inits(LiftParam)

@@ -81,7 +81,7 @@
 function [GAMMA, EN0] = Dyn_6DOF(q,dq,ddq,modelParam,extWrenches)
     
     % Declare gravitational force
-    G2 = 9.81;
+    G2 = -9.81;
 
     % Extract Parameters
     for ii = 1 : 6

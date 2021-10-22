@@ -7,7 +7,7 @@ if nargin>5
 end
 
 % Get lifting start and end
-iLiftOff = floor(N * LiftParam.PercentageLiftOff);
+iLiftOff = floor(N * LiftParam.PercentageLiftOff)+1;
 iDropOff = floor(N* LiftParam.PercentageDropOff);
 
 % Get the forward kinematic model

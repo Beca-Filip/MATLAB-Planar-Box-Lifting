@@ -58,10 +58,10 @@ ddq = [cell_ddq{:}].'; % Merge and transpose so rows correspond to single joint 
 
 %% Intermediate Computations: Lift Off and Drop Off wrist cartesian positions
 
-% Find the time index where lift off is happening
-timeLiftOff = itpParam.KnotIndices(end) * liftParam.PercentageLiftOff * 0.01;
-% Find the time index where drop off is happening
-timeDropOff = itpParam.KnotIndices(end) * liftParam.PercentageDropOff * 0.01;
+% Find the time where lift off is happening
+timeLiftOff = (itpParam.KnotIndices(end)-1) * liftParam.PercentageLiftOff * 0.01;
+% Find the time where drop off is happening
+timeDropOff = (itpParam.KnotIndices(end)-1) * liftParam.PercentageDropOff * 0.01;
 
 
 % Get the joint angles at lift off time
@@ -199,8 +199,6 @@ constraintInfo.Equalities = struct([]);
 C = [];
 
 % COP conditions
-disp(size(XCOP))
-disp(size(XCOP_high))
 C = [C; (XCOP - XCOP_high)'];
 C = [C; (-XCOP + XCOP_low)'];
 % % Add to description
@@ -246,11 +244,11 @@ constraintInfo.Equalities(1).Description = 'WristPositionLiftOff';
 constraintInfo.Equalities(1).Amount = 2;
 
 % Drop Off conditions ( along X and Y axis )
-% Ceq = [Ceq; Tdo{end, 1}(1, 4) - liftParam.WristPositionDropOff(1)];
-% Ceq = [Ceq; Tdo{end, 1}(2, 4) - liftParam.WristPositionDropOff(2)];
+Ceq = [Ceq; Tdo{end, 1}(1, 4) - liftParam.WristPositionDropOff(1)];
+Ceq = [Ceq; Tdo{end, 1}(2, 4) - liftParam.WristPositionDropOff(2)];
 
-% constraintInfo.Equalities(2).Description = 'WristPositionDropOff';
-% constraintInfo.Equalities(2).Amount = 2;
+constraintInfo.Equalities(2).Description = 'WristPositionDropOff';
+constraintInfo.Equalities(2).Amount = 2;
 
 end
 

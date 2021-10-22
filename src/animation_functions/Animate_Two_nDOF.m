@@ -49,7 +49,7 @@ if isfield(options, 'legend_entry2'); legend_entry2 = options.legend_entry2; els
 
 if isfield(options, 'xlabel'); xlabel_entry = options.xlabel; else; xlabel_entry = 'X-axis [m]'; end
 if isfield(options, 'ylabel'); ylabel_entry = options.ylabel; else; ylabel_entry = 'Y-axis [m]'; end
-if isfield(options, 'title'); title_entry = options.title; else; title_entry = 'Animated Planar RobotS'; end
+if isfield(options, 'title'); title_entry = options.title; else; title_entry = 'Animated Planar Robots'; end
 if isfield(options, 'show_legend'); show_legend = options.show_legend; else; show_legend = false; end
 if isfield(options, 'show_grid'); show_grid = options.show_grid; else; show_grid = true; end
 

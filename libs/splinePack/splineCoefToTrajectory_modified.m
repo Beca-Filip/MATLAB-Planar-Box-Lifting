@@ -63,7 +63,6 @@ j = 2;
 % Initialize output
 f = [];
 
-
 % For all knots before last knot
 for jj = 2:n+1
     % All timesamples less than current knot
@@ -76,7 +75,7 @@ end
 % All timesamples less than current knot
 [q, q_der] = polyCoefToTrajectory4_modified(coefs((n-1)*p+1:n*p), x, order);
 % Add to output
-f = [f, [q; q_der]]*(x >= knots(n+1));
+f = [f, [q; q_der]*(x >= knots(n+1))];
 
 
 % Sum columns because we only want 1 sample
